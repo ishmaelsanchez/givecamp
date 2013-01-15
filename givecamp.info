@@ -4,8 +4,6 @@ version = "7.x-1.0"
 
 core = 7.x
 
-dependencies[] = comment
-
 ; Enable contrib modules
 dependencies[] = admin_menu
 dependencies[] = calendar
@@ -13,6 +11,7 @@ dependencies[] = context
 dependencies[] = context_ui
 dependencies[] = ctools
 dependencies[] = date
+dependencies[] = date_popup
 dependencies[] = email
 dependencies[] = entitycache
 dependencies[] = entityreference
@@ -22,6 +21,7 @@ dependencies[] = imce
 dependencies[] = imce_wysiwyg
 dependencies[] = link
 dependencies[] = logintoboggan
+dependencies[] = metatag
 dependencies[] = module_filter
 dependencies[] = nodeblock
 dependencies[] = pathauto
