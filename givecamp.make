@@ -34,6 +34,9 @@ projects[email][subdir] = "contrib"
 projects[link][type] = "module"
 projects[link][subdir] = "contrib"
 
+projects[entity][type] = "module"
+projects[entity][subdir] = "contrib"
+
 projects[entityreference][type] = "module"
 projects[entityreference][subdir] = "contrib"
 
@@ -53,13 +56,6 @@ projects[token][subdir] = "contrib"
 
 ; projects[securepages][type] = "module"
 ; projects[securepages][subdir] = "contrib"
-
-; Social media==================================================================
-projects[socialmedia][type] = module
-projects[socialmedia][subdir] = contrib
-
-projects[twitter_pull][type] = module
-projects[twitter_pull][subdir] = contrib
 
 ; Performance ==================================================================
 projects[entitycache][type] = "module"
@@ -86,6 +82,14 @@ projects[pathauto][subdir] = "contrib"
 
 projects[xmlsitemap][type] = "module"
 projects[xmlsitemap][subdir] = "contrib"
+
+; Social media==================================================================
+projects[socialmedia][type] = module
+projects[socialmedia][subdir] = contrib
+
+projects[twitter_pull][type] = module
+projects[twitter_pull][subdir] = contrib
+
 
 ; Views ========================================================================
 projects[views][type] = "module"
