@@ -7,13 +7,34 @@ core = 7.x
 dependencies[] = comment
 
 ; Enable contrib modules
+dependencies[] = admin_menu
 dependencies[] = calendar
+dependencies[] = context
+dependencies[] = context_ui
+dependencies[] = ctools
 dependencies[] = date
 dependencies[] = email
+dependencies[] = entitycache
 dependencies[] = entityreference
+dependencies[] = globalredirect
+dependencies[] = googleanalytics
+dependencies[] = imce
+dependencies[] = imce_wysiwyg
+dependencies[] = link
 dependencies[] = logintoboggan
-dependencies[] = twitter
+dependencies[] = module_filter
+dependencies[] = nodeblock
+dependencies[] = pathauto
+dependencies[] = twitter_pull
+dependencies[] = token
+dependencies[] = views
+dependencies[] = views_ui
 dependencies[] = views_bulk_operations
+dependencies[] = webform
+dependencies[] = wysiwyg
+dependencies[] = xmlsitemap
+dependencies[] = xmlsitemap_node
+dependencies[] = xmlsitemap_engines
 
 ; Enable base modules
 dependencies[] = block
@@ -31,27 +52,7 @@ dependencies[] = dblog
 dependencies[] = search
 dependencies[] = field_ui
 dependencies[] = file
-dependencies[] = admin_menu
-dependencies[] = context
-dependencies[] = context_ui
-dependencies[] = ctools
-dependencies[] = entitycache
-dependencies[] = globalredirect
-dependencies[] = googleanalytics
-dependencies[] = imce
-dependencies[] = imce_wysiwyg
-dependencies[] = link
-dependencies[] = nodeblock
-dependencies[] = module_filter
-dependencies[] = pathauto
-dependencies[] = token
-dependencies[] = views
-dependencies[] = views_ui
-dependencies[] = webform
-dependencies[] = wysiwyg
-dependencies[] = xmlsitemap
-dependencies[] = xmlsitemap_node
-dependencies[] = xmlsitemap_engines
+
 dependencies[] = devel
 
 files[] = givecamp.profile
