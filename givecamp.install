@@ -2,9 +2,9 @@
 // @TODO add fields for proposal submission, perms (only volunteers can see), assign to selfs
 // @TODO view for reviewing proposals (Inline entity editing)
 // @TODO add fields for events
-// @TODO Add fields for sponsor link
 // @TODO Add fields for project
 // @TODO geo location modules
+// @TODO view for sponsors
 // @TODO workflow for proposal to project?
 
 /**
@@ -44,18 +44,21 @@ function givecamp_set_vars() {
   variable_set('node_options_page', array('status'));
   variable_set('comment_page', COMMENT_NODE_HIDDEN);
   
-  // Block and webform content not promoted and comments disabled.
-  variable_set('node_options_block', array('status'));
+  // Block, sponsor and webform comments disabled.
   variable_set('comment_block', COMMENT_NODE_HIDDEN);
   variable_set('comment_webform', COMMENT_NODE_HIDDEN);
+  variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
 
-  // Default articles and webforms not promoted
+  // Articles, blocks, sponsors and webforms not promoted
+  variable_set('node_options_block', array('status'));
   variable_set('node_options_article', array('status'));
+  variable_set('node_options_sponsor', array('status'));
   variable_set('node_options_webform', array('status'));
   
-  // Don't display date and author information page, block, webform nodes.
+  // Don't display date/author info on page, block, sponsor webform nodes.
   variable_set('node_submitted_page', FALSE);
   variable_set('node_submitted_block', FALSE);
+  variable_set('node_submitted_sponsor', FALSE);
   variable_set('node_submitted_webform', FALSE);
   
   // Don't let a particular content type add links to main menu
@@ -63,7 +66,7 @@ function givecamp_set_vars() {
   variable_set('menu_parent_block', 'main-menu:0');
   variable_set('menu_parent_webform', 'main-menu:0');
 
-  // IMCE access for roles
+  // IMCE access for manager and admin roles
   variable_set('imce_roles_profiles', array(
     '3' => array(
       'weight' => 0,
@@ -146,7 +149,7 @@ function givecamp_set_vars() {
 
   // Set pages: home and error
   variable_set('site_frontpage', 'node/1');
-  variable_set('site_404', 'node/5');
+  variable_set('site_404', 'node/7');
   
   // Logintoboggan
   variable_set('logintoboggan_redirect_on_confirm', ''); // Set path after login
@@ -370,6 +373,8 @@ function givecamp_set_perm_roles() {
     'use text format full_html',
     'access contextual links',
     'administer menu',
+    'edit meta tags',
+    'administer nodes',
     'access content overview',
     'create article content',
     'create block content',
@@ -397,6 +402,7 @@ function givecamp_set_perm_roles() {
     'access administration pages',
     'block IP addresses',
     'view the administration theme',
+    'access site reports',
     'edit terms in 1',
     'access all webform results',
     'edit all webform submissions',
@@ -418,6 +424,7 @@ function givecamp_set_perm_roles() {
     'access administration menu',
     'use text format filtered_html',
     'access contextual links',
+    'edit meta tags',
     'access content overview',
     'create article content',
     'create block content',
@@ -503,10 +510,9 @@ function givecamp_set_blocks() {
 }
 
 function givecamp_set_fields_types() {
-   // Insert default pre-defined node types into the database
-  // documentation at: http://api.drupal.org/api/HEAD/function/hook_node_info.
+  // Default pre-defined content types
   $types = array(
- array(
+    array(
       'type' => 'page',
       'name' => st('Page'),
       'base' => 'node_content',
@@ -589,205 +595,212 @@ function givecamp_set_fields_types() {
   );
   taxonomy_vocabulary_save($vocabulary);
 
-  $field = array(
-    'field_name' => 'field_' . $vocabulary->machine_name,
-    'type' => 'taxonomy_term_reference',
-    // Set cardinality to unlimited for tagging.
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'settings' => array(
-      'allowed_values' => array(
-        array(
-          'vocabulary' => $vocabulary->machine_name,
-          'parent' => 0,
+  // Create fields to be binded to entities later
+  $default_fields = array(
+    array(
+      'field_name' => 'field_' . $vocabulary->machine_name,
+      'type' => 'taxonomy_term_reference',
+      // Set cardinality to unlimited for tagging.
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'settings' => array(
+        'allowed_values' => array(
+          array(
+            'vocabulary' => $vocabulary->machine_name,
+            'parent' => 0,
+          ),
         ),
       ),
     ),
-  );
-  field_create_field($field);
-
-  $instance = array(
-    'field_name' => 'field_' . $vocabulary->machine_name,
-    'entity_type' => 'node',
-    'label' => 'Tags',
-    'bundle' => 'article',
-    'description' => $vocabulary->help,
-    'widget' => array(
-      'type' => 'taxonomy_autocomplete',
-      'weight' => -4,
-    ),
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'type' => 'taxonomy_term_reference_link',
-        'weight' => 10,
+    array(
+      'field_name' => 'field_image',
+      'type' => 'image',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'indexes' => array('fid' => array('fid')),
+      'settings' => array(
+        'uri_scheme' => 'public',
+        'default_image' => FALSE,
       ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'type' => 'taxonomy_term_reference_link',
-        'weight' => 10,
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
       ),
     ),
-  );
-  field_create_instance($instance);
-
-
-  // Create fields to be binded to entities
-  $default_fields = array();
-  $default_fields[] = array(
-    'field_name' => 'field_image',
-    'type' => 'image',
-    'cardinality' => 1,
-    'locked' => FALSE,
-    'indexes' => array('fid' => array('fid')),
-    'settings' => array(
-      'uri_scheme' => 'public',
-      'default_image' => FALSE,
+    array(
+      'field_name' => 'field_sponsor_logo',
+      'type' => 'image',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'indexes' => array('fid' => array('fid')),
+      'settings' => array(
+        'uri_scheme' => 'public',
+        'default_image' => FALSE,
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+      ),
     ),
-    'storage' => array(
-      'type' => 'field_sql_storage',
-      'settings' => array(),
-    ),
-  );
-  $default_fields[] = array(
-    'field_name' => 'field_sponsor_logo',
-    'type' => 'image',
-    'cardinality' => 1,
-    'locked' => FALSE,
-    'indexes' => array('fid' => array('fid')),
-    'settings' => array(
-      'uri_scheme' => 'public',
-      'default_image' => FALSE,
-    ),
-    'storage' => array(
-      'type' => 'field_sql_storage',
-      'settings' => array(),
+    array(
+      'field_name' => 'field_sponsor_link',
+      'type' => 'link',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      //'indexes' => array('fid' => array('fid')),
+      'settings' => array(
+        'uri_scheme' => 'public',
+        'default_image' => FALSE,
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+      ),
     ),
   );
   
   foreach ($default_fields as $key => $value) {
     field_create_field($value);
   }
-  
 
-
-  // Many of the following values will be defaulted, they're included here as an illustrative examples.
+  // Bind fields to entities
   // See http://api.drupal.org/api/function/field_create_instance/7
-  $instance = array(
-    'field_name' => 'field_image',
-    'entity_type' => 'node',
-    'label' => 'Image',
-    'bundle' => 'article',
-    'description' => st('Upload an image to go with this article.'),
-    'required' => FALSE,
-
-    'settings' => array(
-      'file_directory' => 'images',
-      'file_extensions' => 'png gif jpg jpeg',
-      'max_filesize' => '',
-      'max_resolution' => '',
-      'min_resolution' => '',
-      'alt_field' => TRUE,
-      'title_field' => '',
+  $instances = array(
+    array(
+      'field_name' => 'field_' . $vocabulary->machine_name,
+      'entity_type' => 'node',
+      'label' => 'Tags',
+      'bundle' => 'article',
+      'description' => $vocabulary->help,
+      'widget' => array(
+        'type' => 'taxonomy_autocomplete',
+        'weight' => -4,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'taxonomy_term_reference_link',
+          'weight' => 10,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'type' => 'taxonomy_term_reference_link',
+          'weight' => 10,
+        ),
+      ),
     ),
-
-    'widget' => array(
-      'type' => 'image_image',
+    array(
+      'field_name' => 'field_image',
+      'entity_type' => 'node',
+      'label' => 'Image',
+      'bundle' => 'article',
+      'description' => st('Upload an image to go with this article.'),
+      'required' => FALSE,
       'settings' => array(
-        'progress_indicator' => 'throbber',
-        'preview_image_style' => 'thumbnail',
+        'file_directory' => 'images',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '1 MB',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'alt_field' => TRUE,
+        'title_field' => '',
       ),
-      'weight' => -1,
+      'widget' => array(
+        'type' => 'image_image',
+        'settings' => array(
+          'progress_indicator' => 'throbber',
+          'preview_image_style' => 'thumbnail',
+        ),
+        'weight' => -1,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'large', 'image_link' => ''),
+          'weight' => -1,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
+          'weight' => -1,
+        ),
+      ),
     ),
-
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'type' => 'image',
-        'settings' => array('image_style' => 'large', 'image_link' => ''),
+    array(
+      'field_name' => 'field_sponsor_logo',
+      'entity_type' => 'node',
+      'label' => 'Sponsor Logo',
+      'bundle' => 'sponsor',
+      'description' => st('Upload a sponsor\'s logo.'),
+      'required' => FALSE,
+      'settings' => array(
+        'file_directory' => 'logos',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '1 MB',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'alt_field' => TRUE,
+        'title_field' => '',
+      ),
+      'widget' => array(
+        'type' => 'image_image',
+        'settings' => array(
+          'progress_indicator' => 'throbber',
+          'preview_image_style' => 'thumbnail',
+        ),
         'weight' => -1,
       ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'type' => 'image',
-        'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
-        'weight' => -1,
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'large', 'image_link' => ''),
+          'weight' => -1,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
+          'weight' => -1,
+        ),
       ),
     ),
   );
-  field_create_instance($instance);
-  $sponsor_image = array(
-    'field_name' => 'field_sponsor_logo',
-    'entity_type' => 'node',
-    'label' => 'Sponsor Logo',
-    'bundle' => 'sponsor',
-    'description' => st('Upload a sponsor\'s logo.'),
-    'required' => FALSE,
-
-    'settings' => array(
-      'file_directory' => 'logos',
-      'file_extensions' => 'png gif jpg jpeg',
-      'max_filesize' => '1 MB',
-      'max_resolution' => '',
-      'min_resolution' => '',
-      'alt_field' => TRUE,
-      'title_field' => '',
-    ),
-
-    'widget' => array(
-      'type' => 'image_image',
-      'settings' => array(
-        'progress_indicator' => 'throbber',
-        'preview_image_style' => 'thumbnail',
-      ),
-      'weight' => -1,
-    ),
-
-    'display' => array(
-      'default' => array(
-        'label' => 'hidden',
-        'type' => 'image',
-        'settings' => array('image_style' => 'large', 'image_link' => ''),
-        'weight' => -1,
-      ),
-      'teaser' => array(
-        'label' => 'hidden',
-        'type' => 'image',
-        'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
-        'weight' => -1,
-      ),
-    ),
-  );
-  field_create_instance($sponsor_image);
+  
+  foreach ($instances as $key => $value) {
+    field_create_instance($value);
+  }
 }
 
 function givecamp_set_nodes_links() {
   $default_nodes = array();
-  
+  // @TODO possibly move node text to different function or an include
   // Create default nodes
   $default_nodes[] = array( 
     'title' => st('Home'),
-    'node_body' => st('<p><strong>Homepage text</strong>:</p>.'),
-    'link_path' => st('home'),
+    'node_body' => st('<p>Homepage text, replace after install</p>.'),
+    //'link_path' => st('home'),
+  );
+  $default_nodes[] = array( 
+    'title' => st('About'),
+    'node_body' => st('<p>GiveCamp is a weekend-long event where technology professionals – from designers, developers and database administrators to marketers and web strategists – donate their time to provide solutions for non-profit organizations.<p><p>Organizations may need a new website or a renewal of an old one. For others, GiveCamp helps them make the leap to modernizing how they operate and for still others, this is an opportunity to think strategically, about their online presence. This is about matching the needs of non-profits with the talent of our local technology-loving community.</p><p>Any 501(3) can apply to participate in GiveCamp. Accepted non-profits will be matched with a project liaison prior to GiveCamp who will help them shape their project and answer any critical questions to ensure the weekend is a success.</p><p>For volunteers, GiveCamp provides a unique opportunity to connect with the local tech community. Individuals can work with their colleagues in company teams, or they can opt to be matched with fellow volunteers who have complementary skill sets.</p><p>Everyone is welcome to head home for the evenings – but there are always the diehards who work from Friday kickoff straight through Sunday afternoon. Food and drinks are provided.</p><p>Would you like to be part of this experience? Applications are open for non-profits, volunteers, and we’re still looking for sponsors! We hope you\'ll join us.</p>'),
   );
   $default_nodes[] = array( 
     'title' => st('Submissions'),
     'node_body' => st('<p><strong>DEFAULT TEXT</strong>:</p> Add info about submissions.'),
-    'link_path' => st('submissions'),
   );
   $default_nodes[] = array( 
     'title' => st('Events'),
     'node_body' => st('<p><strong>DEFAULT TEXT</strong>:</p> Add info about events.'),
-    'link_path' => st('events'),
   );
   $default_nodes[] = array( 
     'title' => st('Sponsors'),
-    'node_body' => st('<p><strong>DEFAULT TEXT</stong>:</p> Add info about sponsors.'),
-    'link_path' => st('services'),
+    'node_body' => st('<p>As a <strong>GiveCamp sponsor</strong>, your support helps bring together volunteers to help serve non-profit organizations.</p><p>Many of the projects created at GiveCamp would typically cost each non-profit between $10,000 and $30,000. And the efficiencies the solutions create – often reducing the paperwork and staff time needed to complete work; means GiveCamp creates value beyond the cost of the projects themselves. <strong>Sponsors are an important part</strong> of ensuring that non-profits continue to benefit from this valuable work, with no cost to participate.</p><p>We need your support to:<ul><li>Provide meals and snacks throughout the weekend</li><li>Cash for Operating Expenses</li><li>Giveaways</li><li>T-Shirts & Name tags</li><li>Professional Services</li></ul><p>Sponsors will receive recognition throughout the GiveCamp weekend including being featured on the GiveCamp website.</p><p>Ready to support the technology needs of our non-profit community? Let us know how you would like to help, or <a href="/contact">contact us</a> to discuss sponsorship opportunities.'),
   );
   $default_nodes[] = array( 
     'title' => st('Contact'),
     'node_body' => st('<p>DEFAULT TEXT:</p> Use the form below to contact us.'),
-    'link_path' => st('contact'),
   );
   
   foreach ($default_nodes as $key => $value) {
@@ -814,7 +827,7 @@ function givecamp_set_nodes_links() {
       'link_title' => $value['title'],
       'description' => '',
       'parent' => 'main-menu:0',
-      'weight' => 0,
+      'weight' => $key,
       'plid' => 0,
       'menu_name' => 'main-menu'
     );
@@ -831,15 +844,20 @@ function givecamp_set_nodes_links() {
     node_save($node);
   }
   
-  // More notes without menu entries
-  $additional_nodes = array();
-  $additional_nodes[] = array( 
-    'title' => st('Whoops, Page Not Found'),
-    'node_body' => st('Sorry, If you\'re reading this it means that we couldn\'t 
-      find the page you requested. Return to the <a href="/">Homepage</a> or <a 
-      href="/search">Search our site</a>. If you have any questions or concerns, 
-      please <a href="/contact">contact us</a>.'),
-    'link_path' => st('error'),
+  // More nodes without menu entries
+  $additional_nodes = array(
+    array( 
+      'title' => st('Whoops, Page Not Found'),
+      'node_body' => st('Sorry, If you\'re reading this it means that we couldn\'t find the page you requested. Return to the <a href="/">Homepage</a> or <a href="/search">Search our site</a>. If you have any questions or concerns, please <a href="/contact">contact us</a>.'),
+    ),
+    array( 
+      'title' => st('Venue'),
+      'node_body' => st('Add venue image, address, and blurb about location (directions, parking, etc).'),
+    ),
+    array( 
+      'title' => st('Schedule'),
+      'node_body' => st('Add schedule information.'),
+    ),
   );
   
     foreach ($additional_nodes as $key => $value) {
