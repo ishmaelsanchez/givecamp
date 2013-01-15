@@ -45,6 +45,12 @@ projects[menu_block][subdir] = "contrib"
 projects[module_filter][type] = "module"
 projects[module_filter][subdir] = "contrib"
 
+projects[nodeblock][type] = "module"
+projects[nodeblock][subdir] = "contrib"
+
+projects[token][type] = "module"
+projects[token][subdir] = "contrib"
+
 ; projects[securepages][type] = "module"
 ; projects[securepages][subdir] = "contrib"
 
