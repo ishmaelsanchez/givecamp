@@ -29,6 +29,9 @@ function givecamp_install() {
  * Defines variables for nodes and contrib modules
  */
 function givecamp_set_vars() {
+  // Fix for distribution_name notice error during install
+  variable_set('install_profile', 'standard');
+  
   // Default page not promoted and comments disabled.
   variable_set('node_options_page', array('status'));
   variable_set('comment_page', COMMENT_NODE_HIDDEN);
@@ -325,10 +328,10 @@ function givecamp_set_perm_roles() {
     ->execute();
   
     // Create role for managers
-  $role = new stdClass();
+  $manager_role = new stdClass();
   $manager_role->name = 'manager';
-  $role->weight = 2;
-  user_role_save($role);
+  $manager_role->weight = 2;
+  user_role_save($manager_role);
   
   $permissions = array(
     'access administration menu',
@@ -351,11 +354,11 @@ function givecamp_set_perm_roles() {
     'delete own webform submissions',
   );
 
-  user_role_grant_permissions($role->rid, $permissions);
+  user_role_grant_permissions($manager_role->rid, $permissions);
   
   // Create editor role with some sensible defaults
   $editor_role = new stdClass();
-  $role->name = 'editor';
+  $editor_role->name = 'editor';
   $editor_role->weight = 3;
   user_role_save($editor_role);
   
@@ -379,7 +382,7 @@ function givecamp_set_perm_roles() {
     'access own webform submissions',
   );
 
-  user_role_grant_permissions($manager_role->rid, $permissions);
+  user_role_grant_permissions($editor_role->rid, $permissions);
 }
 
 
