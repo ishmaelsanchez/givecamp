@@ -2,8 +2,7 @@
 // @TODO add fields for proposal submission, perms (only volunteers can see), assign to selfs
 // @TODO view for reviewing proposals (Inline entity editing)
 // @TODO add fields for events
-// @TODO WYSIWYG needs to be dead easy
-// @TODO Add fields for sponsors
+// @TODO Add fields for sponsor link
 // @TODO Add fields for project
 // @TODO geo location modules
 // @TODO workflow for proposal to project?
@@ -14,7 +13,20 @@
  * Perform actions to set up the site for this profile.
  */
 function givecamp_install() {
-
+  // Fix for distribution_name notice error during install
+  // See http://drupal.org/node/1170362 for more
+//  UPDATE `my_database_name`.`system` SET `status` = '1',
+//`info` = '' WHERE `system`.`filename` = 'profiles/demo_profile/demo_profile.profile';
+//  
+//  $query = db_update('system')
+//  ->condition('module', 'my_module')
+//  ->where(
+//    'SUBSTR(delta, 1, 14) <> :module_key',
+//    array('module_key' => 'my_module-key_')
+//  )
+//  ->fields()
+//  ->execute();
+  
   // Custom stuff for givecamp
   givecamp_set_vars();
   givecamp_set_text_formats();
@@ -22,16 +34,12 @@ function givecamp_install() {
   givecamp_set_perm_roles();
   givecamp_set_blocks();
   givecamp_set_nodes_links();
- 
 }
 
 /**
  * Defines variables for nodes and contrib modules
  */
 function givecamp_set_vars() {
-  // Fix for distribution_name notice error during install
-  variable_set('install_profile', 'standard');
-  
   // Default page not promoted and comments disabled.
   variable_set('node_options_page', array('status'));
   variable_set('comment_page', COMMENT_NODE_HIDDEN);
@@ -49,7 +57,27 @@ function givecamp_set_vars() {
   variable_set('node_submitted_page', FALSE);
   variable_set('node_submitted_block', FALSE);
   variable_set('node_submitted_webform', FALSE);
+  
+  // Don't let a particular content type add links to main menu
+  variable_set('menu_parent_article', 'main-menu:0');
+  variable_set('menu_parent_block', 'main-menu:0');
+  variable_set('menu_parent_webform', 'main-menu:0');
 
+  // IMCE access for roles
+  variable_set('imce_roles_profiles', array(
+    '3' => array(
+      'weight' => 0,
+      'public_pid' => 1,
+    ), 
+    '4' => array(
+      'weight' => 0,
+      'public_pid' => 1,
+    ), 
+  ));
+  
+  // Enable nodeblock for block content type
+  variable_set('nodeblock_block', 1);
+  
   // Cache GA code by default
   variable_set('googleanalytics_cache', 1);
 
@@ -65,7 +93,7 @@ function givecamp_set_vars() {
   // Set cron
   variable_set('cron_safe_threshold', '43200');
 
-  // Set search engines to submit to
+  // Set search engines to submit
   variable_set('xmlsitemap_engines_engines', array('bing', 'google'));
 
   // Set XML sitemap minimum
@@ -74,10 +102,14 @@ function givecamp_set_vars() {
   // Include pages and articles in sitemap
   variable_set('xmlsitemap_settings_node_page', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_article', array('status' => 1, 'priority' => 0.5));
+  variable_set('xmlsitemap_settings_node_event', array('status' => 1, 'priority' => 0.5));
+  variable_set('xmlsitemap_settings_node_sponsor', array('status' => 1, 'priority' => 0.5));
+  variable_set('xmlsitemap_settings_node_project', array('status' => 1, 'priority' => 0.5));
   
   // Disable user register.
   variable_set('user_register', USER_REGISTER_ADMINISTRATORS_ONLY);
   
+  // Themes
   variable_set('admin_theme', 'rubik');
   variable_set('node_admin_theme', '1');
   variable_set('theme_default', 'seven');
@@ -330,25 +362,45 @@ function givecamp_set_perm_roles() {
     // Create role for managers
   $manager_role = new stdClass();
   $manager_role->name = 'manager';
-  $manager_role->weight = 2;
+  $manager_role->weight = 3;
   user_role_save($manager_role);
   
   $permissions = array(
     'access administration menu',
     'use text format full_html',
+    'access contextual links',
+    'administer menu',
     'access content overview',
     'create article content',
     'create block content',
     'create page content',
+    'create event content',
+    'create sponsor content',
+    'create webform content',
     'edit any article content',
     'edit any page content',
     'edit own article content',
     'edit own block content',
+    'edit any block content',
     'edit own page content',
+    'edit own event content',
+    'edit any event content',
+    'edit own sponsor content',
+    'edit any sponsor content',
+    'edit own webform content',
+    'edit any webform content',
     'revert revisions',
     'view own unpublished content',
     'view revisions',
+    'create url aliases',
+    'use advanced search',
+    'access administration pages',
+    'block IP addresses',
     'view the administration theme',
+    'edit terms in 1',
+    'access all webform results',
+    'edit all webform submissions',
+    'edit own webform submissions',
     'access own webform results',
     'access own webform submissions',
     'delete own webform submissions',
@@ -358,27 +410,37 @@ function givecamp_set_perm_roles() {
   
   // Create editor role with some sensible defaults
   $editor_role = new stdClass();
-  $editor_role->name = 'editor';
-  $editor_role->weight = 3;
+  $editor_role->name = 'volunteer';
+  $editor_role->weight = 2;
   user_role_save($editor_role);
   
     $permissions = array(
     'access administration menu',
     'use text format filtered_html',
+    'access contextual links',
     'access content overview',
     'create article content',
     'create block content',
     'create page content',
+    'create event content',
+    'create sponsor content',
     'edit any article content',
     'edit any page content',
     'edit own article content',
     'edit own block content',
     'edit own page content',
+    'edit own event content',
+    'edit own sponsor content',
     'revert revisions',
     'view own unpublished content',
     'view revisions',
+    'create url aliases',
+    'access administration pages',
+    'block IP addresses',
+    'edit terms in 1',
     'view the administration theme',
     'access own webform results',
+    'edit own webform submissions',
     'access own webform submissions',
   );
 
@@ -555,10 +617,12 @@ function givecamp_set_fields_types() {
     ),
     'display' => array(
       'default' => array(
+        'label' => 'hidden',
         'type' => 'taxonomy_term_reference_link',
         'weight' => 10,
       ),
       'teaser' => array(
+        'label' => 'hidden',
         'type' => 'taxonomy_term_reference_link',
         'weight' => 10,
       ),
@@ -567,11 +631,9 @@ function givecamp_set_fields_types() {
   field_create_instance($instance);
 
 
-  // Create an image field named "Image", enabled for the 'article' content type.
-  // Many of the following values will be defaulted, they're included here as an illustrative examples.
-  // See http://api.drupal.org/api/function/field_create_field/7
-
-  $field = array(
+  // Create fields to be binded to entities
+  $default_fields = array();
+  $default_fields[] = array(
     'field_name' => 'field_image',
     'type' => 'image',
     'cardinality' => 1,
@@ -586,7 +648,26 @@ function givecamp_set_fields_types() {
       'settings' => array(),
     ),
   );
-  field_create_field($field);
+  $default_fields[] = array(
+    'field_name' => 'field_sponsor_logo',
+    'type' => 'image',
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'indexes' => array('fid' => array('fid')),
+    'settings' => array(
+      'uri_scheme' => 'public',
+      'default_image' => FALSE,
+    ),
+    'storage' => array(
+      'type' => 'field_sql_storage',
+      'settings' => array(),
+    ),
+  );
+  
+  foreach ($default_fields as $key => $value) {
+    field_create_field($value);
+  }
+  
 
 
   // Many of the following values will be defaulted, they're included here as an illustrative examples.
@@ -600,7 +681,7 @@ function givecamp_set_fields_types() {
     'required' => FALSE,
 
     'settings' => array(
-      'file_directory' => 'field/image',
+      'file_directory' => 'images',
       'file_extensions' => 'png gif jpg jpeg',
       'max_filesize' => '',
       'max_resolution' => '',
@@ -634,12 +715,60 @@ function givecamp_set_fields_types() {
     ),
   );
   field_create_instance($instance);
+  $sponsor_image = array(
+    'field_name' => 'field_sponsor_logo',
+    'entity_type' => 'node',
+    'label' => 'Sponsor Logo',
+    'bundle' => 'sponsor',
+    'description' => st('Upload a sponsor\'s logo.'),
+    'required' => FALSE,
+
+    'settings' => array(
+      'file_directory' => 'logos',
+      'file_extensions' => 'png gif jpg jpeg',
+      'max_filesize' => '1 MB',
+      'max_resolution' => '',
+      'min_resolution' => '',
+      'alt_field' => TRUE,
+      'title_field' => '',
+    ),
+
+    'widget' => array(
+      'type' => 'image_image',
+      'settings' => array(
+        'progress_indicator' => 'throbber',
+        'preview_image_style' => 'thumbnail',
+      ),
+      'weight' => -1,
+    ),
+
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'type' => 'image',
+        'settings' => array('image_style' => 'large', 'image_link' => ''),
+        'weight' => -1,
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'type' => 'image',
+        'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
+        'weight' => -1,
+      ),
+    ),
+  );
+  field_create_instance($sponsor_image);
 }
 
 function givecamp_set_nodes_links() {
   $default_nodes = array();
   
   // Create default nodes
+  $default_nodes[] = array( 
+    'title' => st('Home'),
+    'node_body' => st('<p><strong>Homepage text</strong>:</p>.'),
+    'link_path' => st('home'),
+  );
   $default_nodes[] = array( 
     'title' => st('Submissions'),
     'node_body' => st('<p><strong>DEFAULT TEXT</strong>:</p> Add info about submissions.'),
@@ -659,15 +788,6 @@ function givecamp_set_nodes_links() {
     'title' => st('Contact'),
     'node_body' => st('<p>DEFAULT TEXT:</p> Use the form below to contact us.'),
     'link_path' => st('contact'),
-  );
-  
-  $default_nodes[] = array( 
-    'title' => st('Whoops, Page Not Found'),
-    'node_body' => st('Sorry, If you\'re reading this it means that we couldn\'t 
-      find the page you requested. Return to the <a href="/">Homepage</a> or <a 
-      href="/search">Search our site</a>. If you have any questions or concerns, 
-      please <a href="/contact">contact us</a>.'),
-    'link_path' => st('error'),
   );
   
   foreach ($default_nodes as $key => $value) {
@@ -692,7 +812,6 @@ function givecamp_set_nodes_links() {
       'expanded' => 0,
       'parent_depth_limit' => 8,
       'link_title' => $value['title'],
-      'link_path' => $value['link_path'],
       'description' => '',
       'parent' => 'main-menu:0',
       'weight' => 0,
@@ -700,6 +819,40 @@ function givecamp_set_nodes_links() {
       'menu_name' => 'main-menu'
     );
 
+    $node->path['alias'] = $value['link_path'];
+    $node->comment = 0;
+    $node->status = 1;
+    $node->revision = 0;
+    $node->log = 'Programmatically created: ' . date('D, F j, Y');
+    $node->changed = $_SERVER['REQUEST_TIME'];
+    $node->created = $_SERVER['REQUEST_TIME'];
+
+    node_submit($node);
+    node_save($node);
+  }
+  
+  // More notes without menu entries
+  $additional_nodes = array();
+  $additional_nodes[] = array( 
+    'title' => st('Whoops, Page Not Found'),
+    'node_body' => st('Sorry, If you\'re reading this it means that we couldn\'t 
+      find the page you requested. Return to the <a href="/">Homepage</a> or <a 
+      href="/search">Search our site</a>. If you have any questions or concerns, 
+      please <a href="/contact">contact us</a>.'),
+    'link_path' => st('error'),
+  );
+  
+    foreach ($additional_nodes as $key => $value) {
+    $node = new stdClass();
+    $node->type = 'page';
+    node_object_prepare($node);
+
+    $node->uid = 1;
+    $node->name = 'admin';
+    $node->title = $value['title'];
+    $node->language = 'und';
+    $node->body['und']['0']['value'] = $value['node_body'];
+    $node->body['und']['0']['format'] = 'full_html';
     $node->path['alias'] = $value['link_path'];
     $node->comment = 0;
     $node->status = 1;
