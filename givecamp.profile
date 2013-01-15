@@ -1,6 +1,16 @@
 <?php
 
 /**
+ * Set default install profile.
+ *
+ */
+function system_form_install_select_profile_form_alter(&$form, $form_state) {
+  // Hide default Drupal profiles
+  unset($form['profile']['Standard']);
+  unset($form['profile']['Minimal']);
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Allows the profile to alter the site configuration form.
