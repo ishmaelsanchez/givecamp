@@ -1,11 +1,9 @@
 <?php
 // @TODO add fields for proposal submission, perms (only volunteers can see), assign to selfs
 // @TODO view for reviewing proposals (Inline entity editing)
-// @TODO add fields for events
-// @TODO Add fields for project
+// @TODO Add fields for proposals
 // @TODO geo location modules
 // @TODO views for sponsors
-// @TODO workflow for proposal to project?
 
 /**
  * Implements hook_install().
@@ -46,6 +44,7 @@ function givecamp_set_vars() {
   variable_set('node_submitted_sponsor', FALSE);
   variable_set('node_submitted_webform', FALSE);
   
+  // @TODO not working
   // Don't let a particular content type add links to main menu
   variable_set('menu_parent_article', 'main-menu:0');
   variable_set('menu_parent_block', 'main-menu:0');
@@ -100,7 +99,7 @@ function givecamp_set_vars() {
   // Themes
   variable_set('admin_theme', 'rubik');
   variable_set('node_admin_theme', '1');
-  variable_set('theme_default', 'zurb-foundation');
+  variable_set('theme_default', 'zurb_foundation');
   
   // Add new date options to be set as vars below
   $values = array(
@@ -534,15 +533,6 @@ function givecamp_set_fields_types() {
       'locked' => 0,
     ),
     array(
-      'type' => 'project',
-      'name' => st('Project'),
-      'base' => 'node_content',
-      'description' => st("<strong>Projects</strong> are proposals that have been approved."),
-      'custom' => 1,
-      'modified' => 1,
-      'locked' => 0,
-    ),
-    array(
       'type' => 'event',
       'name' => st('Event'),
       'base' => 'node_content',
@@ -581,6 +571,7 @@ function givecamp_set_fields_types() {
   taxonomy_vocabulary_save($vocabulary);
 
   // Create fields to be binded to entities later
+  // Defined in hook_field_info().
   $default_fields = array(
     array(
       'field_name' => 'field_' . $vocabulary->machine_name,
@@ -638,32 +629,15 @@ function givecamp_set_fields_types() {
           'rel' => 'nofollow',
         ),
       ),
-      'storage' => array(
-        'type' => 'field_sql_storage',
-        'settings' => array(),
-      ),
     ),
     array(
       'field_name' => 'field_date',
-      'type' => 'value',
+      'type' => 'datetime',
       'cardinality' => 1,
       'locked' => FALSE,
       'settings' => array(
-        'granularity' => array(
-          '#default_value' => array(
-            'year' => 'year',
-            'month' => 'month',
-            'day' => 'day',
-            'hour' => 'hour',
-          ),
-        ),
-        'cache_enabled' => array(
-          '#default_value' => '4',
-        )
-      ),
-      'storage' => array(
-        'type' => 'field_sql_storage',
-        'settings' => array(),
+        // 'todate' => '',
+        'granularity' => drupal_map_assoc(array('year', 'month', 'day', 'hour')),
       ),
     ),
   );
@@ -738,6 +712,45 @@ function givecamp_set_fields_types() {
       ),
     ),
     array(
+      'field_name' => 'field_sponsor_logo',
+      'entity_type' => 'node',
+      'label' => 'Sponsor Logo',
+      'bundle' => 'sponsor',
+      'description' => st('Upload the sponsor\'s logo.'),
+      'required' => FALSE,
+      'settings' => array(
+        'file_directory' => 'images',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '1 MB',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'alt_field' => TRUE,
+        'title_field' => '',
+      ),
+      'widget' => array(
+        'type' => 'image_image',
+        'settings' => array(
+          'progress_indicator' => 'throbber',
+          'preview_image_style' => 'thumbnail',
+        ),
+        'weight' => -1,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'large', 'image_link' => ''),
+          'weight' => -1,
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
+          'type' => 'image',
+          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
+          'weight' => -1,
+        ),
+      ),
+    ),
+    array(
       'field_name' => 'field_sponsor_link',
       'entity_type' => 'node',
       'label' => 'Sponsor Link',
@@ -755,9 +768,13 @@ function givecamp_set_fields_types() {
       'display' => array(
         'default' => array(
           'label' => 'hidden',
+          'type' => 'link_default',
+          'weight' => 5,
         ),
         'teaser' => array(
           'label' => 'hidden',
+          'type' => 'link_url',
+          'weight' => 5,
         ),
       ),
     ),
@@ -768,20 +785,26 @@ function givecamp_set_fields_types() {
       'bundle' => 'event',
       'description' => st('Add event date.'),
       'required' => FALSE,
-      'settings' => array(
-//        'attributes' => array(
-//          'rel' => '',
-//        ),
-      ),
       'widget' => array(
-        'type' => 'date',
+        'type' => 'date_popup',
+        'settings' => array(
+          'year_range' => '-1:+1',
+        ),
       ),
       'display' => array(
         'default' => array(
           'label' => 'hidden',
+          'settings' => array(
+            'format_type' => 'medium',
+          ),
+          'weight' => -1,
         ),
         'teaser' => array(
           'label' => 'hidden',
+          'settings' => array(
+            'format_type' => 'short',
+          ),
+          'weight' => -1,
         ),
       ),
     ),
