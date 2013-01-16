@@ -1,4 +1,5 @@
 <?php
+$view = new view();
 $view->name = 'sponsors';
 $view->description = 'Listing related to sponsor nodes';
 $view->tag = 'default';

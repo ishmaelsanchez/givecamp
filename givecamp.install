@@ -2,8 +2,6 @@
 // @TODO add fields for proposal submission, perms (only volunteers can see), assign to selfs
 // @TODO view for reviewing proposals (Inline entity editing)
 // @TODO Add fields for proposals
-// @TODO geo location modules
-// @TODO views for sponsors and news place 
 
 /**
  * Implements hook_install().
