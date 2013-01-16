@@ -100,7 +100,7 @@ function givecamp_set_vars() {
   // Themes
   variable_set('admin_theme', 'rubik');
   variable_set('node_admin_theme', '1');
-  variable_set('theme_default', 'seven');
+  variable_set('theme_default', 'zurb-foundation');
   
   // Add new date options to be set as vars below
   $values = array(
@@ -643,6 +643,29 @@ function givecamp_set_fields_types() {
         'settings' => array(),
       ),
     ),
+    array(
+      'field_name' => 'field_date',
+      'type' => 'value',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'settings' => array(
+        'granularity' => array(
+          '#default_value' => array(
+            'year' => 'year',
+            'month' => 'month',
+            'day' => 'day',
+            'hour' => 'hour',
+          ),
+        ),
+        'cache_enabled' => array(
+          '#default_value' => '4',
+        )
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+      ),
+    ),
   );
   
   foreach ($default_fields as $key => $value) {
@@ -715,41 +738,50 @@ function givecamp_set_fields_types() {
       ),
     ),
     array(
-      'field_name' => 'field_sponsor_logo',
+      'field_name' => 'field_sponsor_link',
       'entity_type' => 'node',
-      'label' => 'Sponsor Logo',
+      'label' => 'Sponsor Link',
       'bundle' => 'sponsor',
-      'description' => st('Upload a sponsor\'s logo.'),
+      'description' => st('Add link to sponsor\'s website.'),
       'required' => FALSE,
       'settings' => array(
-        'file_directory' => 'logos',
-        'file_extensions' => 'png gif jpg jpeg',
-        'max_filesize' => '1 MB',
-        'max_resolution' => '',
-        'min_resolution' => '',
-        'alt_field' => TRUE,
-        'title_field' => '',
+        'attributes' => array(
+          'rel' => '',
+        ),
       ),
       'widget' => array(
-        'type' => 'image_image',
-        'settings' => array(
-          'progress_indicator' => 'throbber',
-          'preview_image_style' => 'thumbnail',
-        ),
-        'weight' => -1,
+        'type' => 'link_field',
       ),
       'display' => array(
         'default' => array(
           'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array('image_style' => 'large', 'image_link' => ''),
-          'weight' => -1,
         ),
         'teaser' => array(
           'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
-          'weight' => -1,
+        ),
+      ),
+    ),
+    array(
+      'field_name' => 'field_date',
+      'entity_type' => 'node',
+      'label' => 'Date',
+      'bundle' => 'event',
+      'description' => st('Add event date.'),
+      'required' => FALSE,
+      'settings' => array(
+//        'attributes' => array(
+//          'rel' => '',
+//        ),
+      ),
+      'widget' => array(
+        'type' => 'date',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+        ),
+        'teaser' => array(
+          'label' => 'hidden',
         ),
       ),
     ),
@@ -762,12 +794,11 @@ function givecamp_set_fields_types() {
 
 function givecamp_set_nodes_links() {
   // @TODO possibly move node text to different function or an include
-  // Create default nodes
+  // Create default nodes, dont need link path, pathauto generates alias
   $default_nodes = array(
     array( 
       'title' => st('Home'),
       'node_body' => st('<p>Homepage text replace after install</p>.'),
-      //'link_path' => st('home'),
     ),
     array( 
       'title' => st('About'),
@@ -875,21 +906,6 @@ function givecamp_set_nodes_links() {
     node_submit($node);
     node_save($node);
   }
-  
-  $menu_items = array();
-  
-  // Create main menu links
-  $menu_items[] = array(
-    'link_title' => 'Schedule',
-    'link_path' => '<front>',
-    'weight' => 3,
-    'menu_name' => 'main-menu');
-
-  foreach ($menu_items as $menu_item) {
-    menu_link_save($menu_item);
-  }
-
-  menu_cache_clear_all();
 }
 
 /**
