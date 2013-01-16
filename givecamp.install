@@ -630,7 +630,7 @@ function givecamp_set_fields_types() {
     ),
     array(
       'field_name' => 'field_sponsor_link',
-      'type' => 'link',
+      'type' => 'link_field',
       'cardinality' => 1,
       'locked' => FALSE,
       'settings' => array(
