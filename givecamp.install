@@ -3,7 +3,7 @@
 // @TODO view for reviewing proposals (Inline entity editing)
 // @TODO Add fields for proposals
 // @TODO geo location modules
-// @TODO views for sponsors
+// @TODO views for sponsors and news place 
 
 /**
  * Implements hook_install().
@@ -139,6 +139,28 @@ function givecamp_set_vars() {
   variable_set('logintoboggan_redirect_on_confirm', ''); // Set path after login
   variable_set('logintoboggan_login_with_email', '1'); 
 
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function givecamp_views_api() {
+  list($module, $api) = func_get_args();
+  if ($module == "views" && $api == "views_default") {
+    return array("version" => "3.0");
+  }
+}
+
+/** 
+ * Implementation of hook_views_default_views().
+ * Import default views
+ */
+function givecamp_views_default_views() {
+  foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
+    include_once($filename);
+    $views[$view->name] = $view;
+  }
+  return $views;
 }
 
 function givecamp_set_text_formats() {
@@ -440,7 +462,7 @@ function givecamp_set_perm_roles() {
 
 
 function givecamp_set_blocks() {
-  $default_theme = variable_get('theme_default', 'seven');
+  $default_theme = variable_get('theme_default', 'zurb_foundation');
   $admin_theme = 'rubik';
   
   // Enable some blocks.
@@ -614,10 +636,6 @@ function givecamp_set_fields_types() {
         'default_image' => FALSE,
         'description' => t('Upload the sponsor\'s logo'),
       ),
-      'storage' => array(
-        'type' => 'field_sql_storage',
-        'settings' => array(),
-      ),
     ),
     array(
       'field_name' => 'field_sponsor_link',
@@ -757,11 +775,6 @@ function givecamp_set_fields_types() {
       'bundle' => 'sponsor',
       'description' => st('Add link to sponsor\'s website.'),
       'required' => FALSE,
-      'settings' => array(
-        'attributes' => array(
-          'rel' => '',
-        ),
-      ),
       'widget' => array(
         'type' => 'link_field',
       ),
@@ -929,26 +942,4 @@ function givecamp_set_nodes_links() {
     node_submit($node);
     node_save($node);
   }
-}
-
-/**
- * Implements hook_views_api().
- */
-function givecamp_views_api() {
-  list($module, $api) = func_get_args();
-  if ($module == "views" && $api == "views_default") {
-    return array("version" => "3.0");
-  }
-}
-
-/** 
- * Implementation of hook_views_default_views().
- */
-function givecamp_views_default_views() {
-
-  foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
-    include_once($filename);
-    $views[$view->name] = $view;
-  }
-  return $views;
 }

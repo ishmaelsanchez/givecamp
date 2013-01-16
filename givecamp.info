@@ -6,7 +6,6 @@ core = 7.x
 
 ; Enable contrib modules
 dependencies[] = admin_menu
-dependencies[] = calendar
 dependencies[] = context
 dependencies[] = context_ui
 dependencies[] = ctools
