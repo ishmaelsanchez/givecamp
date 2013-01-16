@@ -4,7 +4,7 @@
 // @TODO add fields for events
 // @TODO Add fields for project
 // @TODO geo location modules
-// @TODO view for sponsors
+// @TODO views for sponsors
 // @TODO workflow for proposal to project?
 
 /**
@@ -13,20 +13,6 @@
  * Perform actions to set up the site for this profile.
  */
 function givecamp_install() {
-  // Fix for distribution_name notice error during install
-  // See http://drupal.org/node/1170362 for more
-//  UPDATE `my_database_name`.`system` SET `status` = '1',
-//`info` = '' WHERE `system`.`filename` = 'profiles/demo_profile/demo_profile.profile';
-//  
-//  $query = db_update('system')
-//  ->condition('module', 'my_module')
-//  ->where(
-//    'SUBSTR(delta, 1, 14) <> :module_key',
-//    array('module_key' => 'my_module-key_')
-//  )
-//  ->fields()
-//  ->execute();
-  
   // Custom stuff for givecamp
   givecamp_set_vars();
   givecamp_set_text_formats();
@@ -49,9 +35,8 @@ function givecamp_set_vars() {
   variable_set('comment_webform', COMMENT_NODE_HIDDEN);
   variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
 
-  // Articles, blocks, sponsors and webforms not promoted
+  // Blocks, sponsors and webforms not promoted
   variable_set('node_options_block', array('status'));
-  variable_set('node_options_article', array('status'));
   variable_set('node_options_sponsor', array('status'));
   variable_set('node_options_webform', array('status'));
   
@@ -602,6 +587,7 @@ function givecamp_set_fields_types() {
       'type' => 'taxonomy_term_reference',
       // Set cardinality to unlimited for tagging.
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
       'settings' => array(
         'allowed_values' => array(
           array(
@@ -635,6 +621,7 @@ function givecamp_set_fields_types() {
       'settings' => array(
         'uri_scheme' => 'public',
         'default_image' => FALSE,
+        'description' => t('Upload the sponsor\'s logo'),
       ),
       'storage' => array(
         'type' => 'field_sql_storage',
@@ -646,10 +633,10 @@ function givecamp_set_fields_types() {
       'type' => 'link',
       'cardinality' => 1,
       'locked' => FALSE,
-      //'indexes' => array('fid' => array('fid')),
       'settings' => array(
-        'uri_scheme' => 'public',
-        'default_image' => FALSE,
+        'attributes' => array(
+          'rel' => 'nofollow',
+        ),
       ),
       'storage' => array(
         'type' => 'field_sql_storage',
@@ -774,33 +761,34 @@ function givecamp_set_fields_types() {
 }
 
 function givecamp_set_nodes_links() {
-  $default_nodes = array();
   // @TODO possibly move node text to different function or an include
   // Create default nodes
-  $default_nodes[] = array( 
-    'title' => st('Home'),
-    'node_body' => st('<p>Homepage text, replace after install</p>.'),
-    //'link_path' => st('home'),
-  );
-  $default_nodes[] = array( 
-    'title' => st('About'),
-    'node_body' => st('<p>GiveCamp is a weekend-long event where technology professionals – from designers, developers and database administrators to marketers and web strategists – donate their time to provide solutions for non-profit organizations.<p><p>Organizations may need a new website or a renewal of an old one. For others, GiveCamp helps them make the leap to modernizing how they operate and for still others, this is an opportunity to think strategically, about their online presence. This is about matching the needs of non-profits with the talent of our local technology-loving community.</p><p>Any 501(3) can apply to participate in GiveCamp. Accepted non-profits will be matched with a project liaison prior to GiveCamp who will help them shape their project and answer any critical questions to ensure the weekend is a success.</p><p>For volunteers, GiveCamp provides a unique opportunity to connect with the local tech community. Individuals can work with their colleagues in company teams, or they can opt to be matched with fellow volunteers who have complementary skill sets.</p><p>Everyone is welcome to head home for the evenings – but there are always the diehards who work from Friday kickoff straight through Sunday afternoon. Food and drinks are provided.</p><p>Would you like to be part of this experience? Applications are open for non-profits, volunteers, and we’re still looking for sponsors! We hope you\'ll join us.</p>'),
-  );
-  $default_nodes[] = array( 
-    'title' => st('Submissions'),
-    'node_body' => st('<p><strong>DEFAULT TEXT</strong>:</p> Add info about submissions.'),
-  );
-  $default_nodes[] = array( 
-    'title' => st('Events'),
-    'node_body' => st('<p><strong>DEFAULT TEXT</strong>:</p> Add info about events.'),
-  );
-  $default_nodes[] = array( 
-    'title' => st('Sponsors'),
-    'node_body' => st('<p>As a <strong>GiveCamp sponsor</strong>, your support helps bring together volunteers to help serve non-profit organizations.</p><p>Many of the projects created at GiveCamp would typically cost each non-profit between $10,000 and $30,000. And the efficiencies the solutions create – often reducing the paperwork and staff time needed to complete work; means GiveCamp creates value beyond the cost of the projects themselves. <strong>Sponsors are an important part</strong> of ensuring that non-profits continue to benefit from this valuable work, with no cost to participate.</p><p>We need your support to:<ul><li>Provide meals and snacks throughout the weekend</li><li>Cash for Operating Expenses</li><li>Giveaways</li><li>T-Shirts & Name tags</li><li>Professional Services</li></ul><p>Sponsors will receive recognition throughout the GiveCamp weekend including being featured on the GiveCamp website.</p><p>Ready to support the technology needs of our non-profit community? Let us know how you would like to help, or <a href="/contact">contact us</a> to discuss sponsorship opportunities.'),
-  );
-  $default_nodes[] = array( 
-    'title' => st('Contact'),
-    'node_body' => st('<p>DEFAULT TEXT:</p> Use the form below to contact us.'),
+  $default_nodes = array(
+    array( 
+      'title' => st('Home'),
+      'node_body' => st('<p>Homepage text replace after install</p>.'),
+      //'link_path' => st('home'),
+    ),
+    array( 
+      'title' => st('About'),
+      'node_body' => st('<p>GiveCamp is a weekend-long event where technology professionals – from designers, developers and database administrators to marketers and web strategists – donate their time to provide solutions for non-profit organizations.<p><p>Organizations may need a new website or a renewal of an old one. For others, GiveCamp helps them make the leap to modernizing how they operate and for still others, this is an opportunity to think strategically, about their online presence. This is about matching the needs of non-profits with the talent of our local technology-loving community.</p><p>Any 501(3) can apply to participate in GiveCamp. Accepted non-profits will be matched with a project liaison prior to GiveCamp who will help them shape their project and answer any critical questions to ensure the weekend is a success.</p><p>For volunteers, GiveCamp provides a unique opportunity to connect with the local tech community. Individuals can work with their colleagues in company teams, or they can opt to be matched with fellow volunteers who have complementary skill sets.</p><p>Everyone is welcome to head home for the evenings – but there are always the diehards who work from Friday kickoff straight through Sunday afternoon. Food and drinks are provided.</p><p>Would you like to be part of this experience? Applications are open for non-profits, volunteers, and we’re still looking for sponsors! We hope you\'ll join us.</p>'),
+    ),
+    array( 
+      'title' => st('Volunteer'),
+      'node_body' => st('<p>Connect with the local tech community for a good cause, <strong>GiveCamp needs your support</strong>. We’ll take on the technology wish lists of 10 to 15 non-profit organizations, and we’re looking for about volunteers, both technical and non-technical, to help us do it.</p><p>A typical GiveCamp draws 75 to 100 volunteers. Individuals can work with their colleagues in company teams, or they can opt to be matched with fellow volunteers who have complementary skill sets. Everyone is welcome to head home for the evenings – but there are always the diehards who work from Friday kickoff straight through Sunday afternoon. Food and drinks provided.<p><h3>Technical volunteers</h3><p>We\'re looking for graphic or UX designers, developers with .NET/Java/LAMP/Open Source/CMS experience, project managers, system/network administrators, DBAs, and non-profit technical consultants and web strategists.</p><h3>Non-technical volunteers</h3><p>Beyond the technology, there are many other aspects that make GiveCamp a success. We need non-technical volunteers to run errands, help with setting up and cleaning up, and everything in between. Whether you can offer a couple hours of your time or join GiveCamp for a couple days, your support is needed.</p>'),
+    ),
+    array( 
+      'title' => st('Non-profits'),
+      'node_body' => st('<p>Does your non-profit need a new website? Want to escape those Excel spreadsheets and get a real donor database? Trying to figure out how to build your social media presence? <strong>GiveCamp is for you</strong>.</p><p>Join us for a weekend-long event that brings together technology professionals committed to providing your organization with solutions, strategies, and tools that can help you continue your good work.From designers, web developers and database administrators to marketers and web strategists, GiveCamp assembles a team of experienced professionals.</p><p>All you need to do is apply, tell us about your desired project, and if your non-profit is selected, we’ll work with you to shape it into a project that can be successfully completed during GiveCamp.</p><p>Don’t miss this opportunity to check a project off your technology wish list.</p><p>[Register Link]</p>'),
+    ),
+    array( 
+      'title' => st('Sponsors'),
+      'node_body' => st('<p>As a <strong>GiveCamp sponsor</strong>, your support helps bring together volunteers to help serve non-profit organizations.</p><p>Many of the projects created at GiveCamp would typically cost each non-profit between $10,000 and $30,000. And the efficiencies the solutions create – often reducing the paperwork and staff time needed to complete work; means GiveCamp creates value beyond the cost of the projects themselves. <strong>Sponsors are an important part</strong> of ensuring that non-profits continue to benefit from this valuable work, with no cost to participate.</p><p>We need your support to:<ul><li>Provide meals and snacks throughout the weekend</li><li>Cash for Operating Expenses</li><li>Giveaways</li><li>T-Shirts & Name tags</li><li>Professional Services</li></ul><p>Sponsors will receive recognition throughout the GiveCamp weekend including being featured on the GiveCamp website.</p><p>Ready to support the technology needs of our non-profit community? Let us know how you would like to help, or <a href="/contact">contact us</a> to discuss sponsorship opportunities.'),
+    ),
+    array( 
+      'title' => st('Contact'),
+      'node_body' => st('<p>DEFAULT TEXT:</p> Use the form below to contact us.'),
+    ), 
   );
   
   foreach ($default_nodes as $key => $value) {
@@ -858,6 +846,11 @@ function givecamp_set_nodes_links() {
       'title' => st('Schedule'),
       'node_body' => st('Add schedule information.'),
     ),
+    array( 
+      'title' => st('FAQ'),
+      'node_body' => st('<p>Here is our listing of frequently asked questions about GiveCamp. If you have a question that\'s not answered here, please feel contact.</p>
+<h3>What is GiveCamp?</h3><p>GiveCamp is a weekend-long event where software developers, designers, and database administrators donate their time to create custom software for non-profit organizations.</p><h3>Will food be provided?</h3><p>YES! There will be tons of food and drinks, so come ready to work and we\'ll worry about the rest.</p><h3>What should I bring?</h3><p>Bring your laptop and anything you like to use to do software projects (mind-mapping software, project planning software, post-it notes, ipod/headphones, etc.)</p><h3>What should I wear?</h3><p>Wear whatever (appropriate) clothes make you comfortable enough to be able to work for a non-profit all weekend.</p><h3>When do I need to be there?</h3><p>You are welcome to come when you can and leave when you must. The event will run 24 hours a day from Friday through Sunday afternoon. We\'ve posted a schedule on this site that we think outlines a sketch of the weekend.</p><h3>Are there give-aways?</h3><p>You know it! Our sponsors have generously provided some cool stuff you might like. Must be present to win!</p><h3>Who started GiveCamp?</h3><p>GiveCamp was an idea hatched by Chris Koenig, Developer Evangelist for Microsoft, as a way to try to channel the raw energy of the local Dallas developer community towards something that would benefit the local community. Dallas ASP.NET User Group leader Toi Wright organized and ran the first ever GiveCamp, calling the event "We Are Microsoft Charity Challenge Weekend" in January of 2008. At that event, we served 18 charities with over 80 developers to great success!</p><h3>Why did you start GiveCamp?</h3><p>Developers code - it\'s what they do. GiveCamp was started as a way to try to channel that raw energy and passion for development towards something that would benefit local communities.</p><h3>When and where are the next ones?</h3><p>Check out <a href="http://GiveCamp.org">GiveCamp.org</a> for information about upcoming GiveCamp events.</p><h3>How do you select non-profits for GiveCamp?</h3><p>The selection of the non-profit organizations that participate in GiveCamp is determined by each organizing event. Each group has different criteria for selecting non-profits than others. Generally, though, we try to select non-profits where we can achieve the greatest impact by helping them out. A charity without a website is more likely to get selected than a charity with an extensive web site. We also look at the request that\'s being made - we try to focus on getting very clear requirements on what the non-profit is looking for and is something that can be achieved over a marathon-coding weekend by a team of approximately 5 developers.</p><h3>How can developers help?</h3><p>Developers are the life-blood of GiveCamp. In its current state, <a href="http://GiveCamp.org">GiveCamp is all about building websites for non-profits</a>. Developers can help by volunteering to be a developer for an upcoming GiveCamp event in their area, bring in their own team to work a GiveCamp event, or even by contacting GiveCamp.org to volunteer to work on the GiveCamp website or to help organize and run your own GiveCamp event.</p><h3>How can non-developers help?</h3><p>There are several ways that non-developers can help. Before the event begins, there is a LOT of work required to organize everything for the GiveCamp weekend. We can always use a few extra "business analysts" to review the participation submissions made by non-profit organizations and help in the selection committee. On the day of the event, you also have a few choices for helping out. First, volunteers are usually needed to help with things like setting out food, stocking the refrigerator, cleanup, blogging, podcasting and generally just checking up on the teams to see how they\'re doing. If you do have some technical skills that are not programming skills, the GiveCamp events are usually very much in need of web designers to help make the web sites they\'re building look great. Web designers will also often get the extra benefit of working on multiple web site projects during the weekend. DBAs are also often valuable. They too will often get a chance to work with multiple teams and share their skills with multiple non-profits. The bottom line is - if you want to participate in a GiveCamp event, we\'ll find a way for you to do it!<p>'),
+    ),
   );
   
     foreach ($additional_nodes as $key => $value) {
@@ -897,4 +890,26 @@ function givecamp_set_nodes_links() {
   }
 
   menu_cache_clear_all();
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function givecamp_views_api() {
+  list($module, $api) = func_get_args();
+  if ($module == "views" && $api == "views_default") {
+    return array("version" => "3.0");
+  }
+}
+
+/** 
+ * Implementation of hook_views_default_views().
+ */
+function givecamp_views_default_views() {
+
+  foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
+    include_once($filename);
+    $views[$view->name] = $view;
+  }
+  return $views;
 }
