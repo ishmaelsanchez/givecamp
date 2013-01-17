@@ -1,7 +1,11 @@
 <?php
-// @TODO add fields for proposal submission, perms (only volunteers can see), assign to selfs
-// @TODO view for reviewing proposals (Inline entity editing)
-// @TODO Add fields for proposals
+// @TODO field for New System Technology Preference
+// Indicate technology preference for the new project/system or select "No Preference!"
+// Existing Support Personnel Skill If Known Comments for support skills:
+// accepted field
+// @TODO view for reviewing proposals (Inline entity editing) and approving (field)
+// @TODO perms (only volunteers can see), assign to selfs
+
 
 /**
  * Implements hook_install().
@@ -22,26 +26,27 @@ function givecamp_install() {
  * Defines variables for nodes and contrib modules
  */
 function givecamp_set_vars() {
-  // Default page not promoted and comments disabled.
-  variable_set('node_options_page', array('status'));
-  variable_set('comment_page', COMMENT_NODE_HIDDEN);
-  
-  // Block, sponsor and webform comments disabled.
-  variable_set('comment_block', COMMENT_NODE_HIDDEN);
-  variable_set('comment_webform', COMMENT_NODE_HIDDEN);
-  variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
-
-  // Blocks, sponsors and webforms not promoted
+  // Do not promote
   variable_set('node_options_block', array('status'));
+  variable_set('node_options_page', array('status'));
+  variable_set('node_options_proposal', array('status'));
   variable_set('node_options_sponsor', array('status'));
   variable_set('node_options_webform', array('status'));
   
-  // Don't display date/author info on page, block, sponsor webform nodes.
-  variable_set('node_submitted_page', FALSE);
+  // Don't display date/author information
   variable_set('node_submitted_block', FALSE);
+  variable_set('node_submitted_page', FALSE);
+  variable_set('node_submitted_proposal', FALSE);
   variable_set('node_submitted_sponsor', FALSE);
   variable_set('node_submitted_webform', FALSE);
   
+  // Comments disabled.
+  variable_set('comment_block', COMMENT_NODE_HIDDEN);
+  variable_set('comment_proposal', COMMENT_NODE_HIDDEN);
+  variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
+  variable_set('comment_webform', COMMENT_NODE_HIDDEN);
+  variable_set('comment_page', COMMENT_NODE_HIDDEN);
+
   // @TODO not working
   // Don't let a particular content type add links to main menu
   variable_set('menu_parent_article', 'main-menu:0');
@@ -89,7 +94,6 @@ function givecamp_set_vars() {
   variable_set('xmlsitemap_settings_node_article', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_event', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_sponsor', array('status' => 1, 'priority' => 0.5));
-  variable_set('xmlsitemap_settings_node_project', array('status' => 1, 'priority' => 0.5));
   
   // Disable user register.
   variable_set('user_register', USER_REGISTER_ADMINISTRATORS_ONLY);
@@ -575,7 +579,8 @@ function givecamp_set_fields_types() {
   foreach ($types as $type) {
     $type = node_type_set_defaults($type);
     node_type_save($type);
-    node_add_body_field($type);
+    // No need for body field on proposals
+    $type->type != 'proposal' ? node_add_body_field($type) : '';
   }
 
   // Create a default vocabulary named "Tags", enabled for the 'article' content type.
@@ -596,7 +601,6 @@ function givecamp_set_fields_types() {
     array(
       'field_name' => 'field_' . $vocabulary->machine_name,
       'type' => 'taxonomy_term_reference',
-      // Set cardinality to unlimited for tagging.
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
       'settings' => array(
@@ -656,6 +660,142 @@ function givecamp_set_fields_types() {
         'granularity' => drupal_map_assoc(array('year', 'month', 'day', 'hour')),
       ),
     ),
+    array(
+      'field_name' => 'field_contact_name',
+      'type' => 'text',
+      'locked' => '0',
+      'settings' => array('max_length' => '125',),
+      'indexes' => array('format' => array(0 => 'format',),),
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_contact_email',
+      'type' => 'email',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_contact_phone',
+      'type' => 'text',
+      'settings' => array('max_length' => '125',),
+      'indexes' => array(
+        'format' => array(0 => 'format',),
+      ),
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_organization_background',
+      'type' => 'text_long',
+      'indexes' => array(
+        'format' => array(0 => 'format',),
+      ),
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_work_request',
+      'type' => 'text_long',
+      'indexes' => array(
+        'format' => array(0 => 'format',),
+      ),
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_existing_technologies',
+      'type' => 'list_text',
+      'settings' => array(
+        'allowed_values' => array(
+          1 => 'HTML/CSS ',
+          2 => 'JavaScript ',
+          3 => 'PHP ',
+          4 => 'Ruby ',
+          5 => 'Java ',
+          6 => 'ASP.NET ',
+          7 => 'C# ',
+          8 => 'Drupal ',
+          9 => 'Joomla ',
+          10 => 'Visual Basic ',
+          11 => 'DotNetNuke/PHP-Nuke ',
+          12 => 'Photoshop/InDesign ',
+          13 => 'Coldfusion ',
+          14 => 'Flex/Flash/Silverlight ',
+          15 => 'Sitefinity ',
+          16 => 'Umbraco ',
+          17 => 'WordPress ',
+          18 => 'MovableType ',
+          19 => 'Community Server ',
+          20 => 'Microsoft Access ',
+          21 => 'LightSwitch ',
+          22 => 'No existing system! ',
+          23 => 'Other',
+        ),
+        'allowed_values_function' => '',
+      ),
+      'indexes' => array('value' => array(0 => 'value',),
+      ),
+      'locked' => '0',
+      'cardinality' => '-1',
+    ),
+    array(
+      'field_name' => 'field_old_tech_issues',
+      'type' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'indexes' => array(
+        'format' => array(0 => 'format',),
+      ),
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_volunteers',
+      'type' => 'entityreference',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'entity_types' => array(),
+      'settings' => array(
+        'target_type' => 'user',
+        'handler' => 'base',
+        'handler_settings' => array(
+          'target_bundles' => array(),
+          'sort' => array('type' => 'none',),
+          'behaviors' => array(
+            'views-select-list' => array('status' => 0,),
+          ),
+        ),
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_volunteers' => array(
+                'target_id' => 'field_volunteers_target_id',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_volunteers' => array(
+                'target_id' => 'field_volunteers_target_id',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'target_id' => array(0 => 'target_id',),
+      ),
+      'bundles' => array(
+        'node' => array(0 => 'proposal',),
+      ),
+    )
   );
   
   foreach ($default_fields as $key => $value) {
@@ -681,11 +821,6 @@ function givecamp_set_fields_types() {
           'type' => 'taxonomy_term_reference_link',
           'weight' => 10,
         ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 10,
-        ),
       ),
     ),
     array(
@@ -699,10 +834,7 @@ function givecamp_set_fields_types() {
         'file_directory' => 'images',
         'file_extensions' => 'png gif jpg jpeg',
         'max_filesize' => '1 MB',
-        'max_resolution' => '',
-        'min_resolution' => '',
         'alt_field' => TRUE,
-        'title_field' => '',
       ),
       'widget' => array(
         'type' => 'image_image',
@@ -717,12 +849,6 @@ function givecamp_set_fields_types() {
           'label' => 'hidden',
           'type' => 'image',
           'settings' => array('image_style' => 'large', 'image_link' => ''),
-          'weight' => -1,
-        ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
           'weight' => -1,
         ),
       ),
@@ -738,10 +864,7 @@ function givecamp_set_fields_types() {
         'file_directory' => 'images',
         'file_extensions' => 'png gif jpg jpeg',
         'max_filesize' => '1 MB',
-        'max_resolution' => '',
-        'min_resolution' => '',
         'alt_field' => TRUE,
-        'title_field' => '',
       ),
       'widget' => array(
         'type' => 'image_image',
@@ -756,12 +879,6 @@ function givecamp_set_fields_types() {
           'label' => 'hidden',
           'type' => 'image',
           'settings' => array('image_style' => 'large', 'image_link' => ''),
-          'weight' => -1,
-        ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'type' => 'image',
-          'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
           'weight' => -1,
         ),
       ),
@@ -780,11 +897,6 @@ function givecamp_set_fields_types() {
         'default' => array(
           'label' => 'hidden',
           'type' => 'link_default',
-          'weight' => 5,
-        ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'type' => 'link_url',
           'weight' => 5,
         ),
       ),
@@ -810,14 +922,176 @@ function givecamp_set_fields_types() {
           ),
           'weight' => -1,
         ),
-        'teaser' => array(
-          'label' => 'hidden',
-          'settings' => array(
-            'format_type' => 'short',
-          ),
-          'weight' => -1,
+      ),
+    ),
+    array(
+      'field_name' => 'field_contact_name',
+      'label' => 'Contact Name',
+      'required' => 1,
+      'widget' => array(
+        'weight' => '-4',
+        'type' => 'text_textfield',
+        'settings' => array(
+          'size' => '50',
         ),
       ),
+      'settings' => array('text_processing' => '0',),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'text_default',
+        ),
+      ),
+      'description' => st('Please enter your first and last name.'),
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'label' => 'Contact Email',
+      'widget' => array(
+        'weight' => '-3',
+        'type' => 'email_textfield',
+        'settings' => array('size' => '50',),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'email_default',
+        ),
+      ),
+      'required' => 1,
+      'description' => 'Please enter your email address. Your email will not be <strong>publicly visible</strong>.',
+      'default_value' => NULL,
+      'field_name' => 'field_contact_email',
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'label' => 'Contact Phone',
+      'widget' => array(
+        'weight' => '-2',
+        'type' => 'text_textfield',
+        'active' => 1,
+        'settings' => array('size' => '50',),
+      ),
+      'settings' => array('text_processing' => '0',),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'text_default',
+        ),
+      ),
+      'required' => 0,
+      'description' => st('Please enter a phone number.'),
+      'default_value' => NULL,
+      'field_name' => 'field_contact_phone',
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'label' => 'Organization Background',
+      'widget' => array(
+        'weight' => '0',
+        'type' => 'text_textarea',
+        'settings' => array('rows' => '5',),
+      ),
+      'settings' => array('text_processing' => '0',),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          //'weight' => 51,
+        ),
+      ),
+      'required' => 1,
+      'description' => 'Tell us about your organization. Please include additional email/phone number.',
+      'field_name' => 'field_organization_background',
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'label' => 'Work Request',
+      'field_name' => 'field_work_request',
+      'widget' => array(
+        'weight' => '5',
+        'type' => 'text_textarea',
+        'settings' => array('rows' => '5',),
+      ),
+      'settings' => array('text_processing' => '0',),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+        ),
+      ),
+      'required' => 1,
+      'description' => 'We can help you sort out some of the technical aspects of your proposal for you; add as much detail as possible.',
+      'default_value' => NULL,
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'field_name' => 'field_existing_technologies',
+      'label' => 'Existing Technologies',
+      'widget' => array(
+        'weight' => '10',
+        'type' => 'options_buttons',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'list_default',
+        ),
+      ),
+      'required' => 1,
+      'description' => 'Select from technologies below. Indicate technology for existing system/s or select "No existing system!"',
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'field_name' => 'field_old_tech_issues',
+      'label' => st('Old Technology Issue/s'),
+      'widget' => array(
+        'weight' => '15',
+        'type' => 'text_textfield',
+        'settings' => array('size' => '50',),
+      ),
+      'settings' => array('text_processing' => '0',),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+        ),
+      ),
+      'required' => 1,
+      'description' => st('Anything that might affect choice of technology for new system?'),
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
+      'label' => 'Volunteers',
+      'widget' => array(
+        'weight' => '20',
+        'type' => 'entityreference_autocomplete',
+        'settings' => array(
+          'match_operator' => 'CONTAINS',
+          'size' => '50',
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+          'type' => 'entityreference_label',
+          'settings' => array(
+            'link' => True,
+          ),
+        ),
+      ),
+      'required' => 0,
+      'description' => st('Volunteers willing to help on this project'),
+      'field_name' => 'field_volunteers',
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
     ),
   );
   
