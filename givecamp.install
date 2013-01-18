@@ -1,11 +1,6 @@
 <?php
-// @TODO field for New System Technology Preference
-// Indicate technology preference for the new project/system or select "No Preference!"
-// Existing Support Personnel Skill If Known Comments for support skills:
-// accepted field
-// @TODO view for reviewing proposals (Inline entity editing) and approving (field)
+// @TODO Project upload and todolist
 // @TODO perms (only volunteers can see), assign to selfs
-
 
 /**
  * Implements hook_install().
@@ -26,22 +21,26 @@ function givecamp_install() {
  * Defines variables for nodes and contrib modules
  */
 function givecamp_set_vars() {
+  // @TODO maybe a loop for to set these vars
   // Do not promote
   variable_set('node_options_block', array('status'));
   variable_set('node_options_page', array('status'));
   variable_set('node_options_proposal', array('status'));
+  variable_set('node_options_project', array('status'));
   variable_set('node_options_sponsor', array('status'));
   variable_set('node_options_webform', array('status'));
   
   // Don't display date/author information
   variable_set('node_submitted_block', FALSE);
   variable_set('node_submitted_page', FALSE);
+  variable_set('node_submitted_project', FALSE);
   variable_set('node_submitted_proposal', FALSE);
   variable_set('node_submitted_sponsor', FALSE);
   variable_set('node_submitted_webform', FALSE);
   
   // Comments disabled.
   variable_set('comment_block', COMMENT_NODE_HIDDEN);
+  variable_set('comment_project', COMMENT_NODE_HIDDEN);
   variable_set('comment_proposal', COMMENT_NODE_HIDDEN);
   variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
   variable_set('comment_webform', COMMENT_NODE_HIDDEN);
@@ -548,19 +547,31 @@ function givecamp_set_fields_types() {
       'locked' => 0,
     ),
     array(
-      'type' => 'proposal',
-      'name' => st('Proposal'),
+      'type' => 'event',
+      'name' => st('Event'),
       'base' => 'node_content',
-      'description' => st("<strong>Proposals</strong> are submissions for possible Charity/Non-Profits projects."),
+      'description' => st('Use <strong>event</strong> for posting a givecamp or related event.'),
       'custom' => 1,
       'modified' => 1,
       'locked' => 0,
     ),
     array(
-      'type' => 'event',
-      'name' => st('Event'),
+      'type' => 'proposal',
+      'name' => st('Proposal'),
+      'title_label' => st('Non-profit/Charity Name'),
       'base' => 'node_content',
-      'description' => st('Use <strong>event</strong> for posting a givecamp or related event.'),
+      'description' => st("<strong>Proposals</strong> are submissions for possible Charity/Non-Profits projects."),
+      'help' => st('Non-profits have trouble coming up with a proposal. The important thing to realize is that <strong>we can\'t help you unless you submit a proposal</strong>! Some suggestions on what to propose: building a website, move your website to use a content management system, search engine optimization (SEO), improve web accessibility (Section 508), mobile application/mobile website, improve your social media exposure,  improve non-profit processes.'),  
+      'custom' => 1,
+      'modified' => 1,
+      'locked' => 0,
+    ),
+    array(
+      'type' => 'project',
+      'name' => st('Project'),
+      'title_label' => st('Project Name'),
+      'base' => 'node_content',
+      'description' => st("<strong>Projects</strong> used by project teams to collaborate with each other on the project."),
       'custom' => 1,
       'modified' => 1,
       'locked' => 0,
@@ -579,8 +590,10 @@ function givecamp_set_fields_types() {
   foreach ($types as $type) {
     $type = node_type_set_defaults($type);
     node_type_save($type);
-    // No need for body field on proposals
-    $type->type != 'proposal' ? node_add_body_field($type) : '';
+    // No need for body field on proposals or projects
+    if ($type->type != 'proposal' || $type->type != 'project'){
+      node_add_body_field($type);
+    }
   }
 
   // Create a default vocabulary named "Tags", enabled for the 'article' content type.
@@ -671,6 +684,9 @@ function givecamp_set_fields_types() {
     array(
       'field_name' => 'field_contact_email',
       'type' => 'email',
+      'field_permissions' => array(
+        'type' => '2',
+      ),
       'active' => '1',
       'locked' => '0',
       'cardinality' => '1',
@@ -681,6 +697,9 @@ function givecamp_set_fields_types() {
       'settings' => array('max_length' => '125',),
       'indexes' => array(
         'format' => array(0 => 'format',),
+      ),
+      'field_permissions' => array(
+        'type' => '1',
       ),
       'active' => '1',
       'locked' => '0',
@@ -754,6 +773,22 @@ function givecamp_set_fields_types() {
       'cardinality' => '1',
     ),
     array(
+      'field_name' => 'field_proposal_status',
+      'type' => 'list_boolean',
+      'settings' => array(
+        'allowed_values' => array(
+          0 => 'Pending',
+          1 => 'Proposal Approved',
+        ),
+      ),
+      'indexes' => array(
+        'value' => array(0 => 'value',),
+      ),
+      'field_permissions' => array('type' => '2',),
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
       'field_name' => 'field_volunteers',
       'type' => 'entityreference',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
@@ -768,6 +803,9 @@ function givecamp_set_fields_types() {
             'views-select-list' => array('status' => 0,),
           ),
         ),
+      ),
+      'field_permissions' => array(
+        'type' => '2',
       ),
       'storage' => array(
         'type' => 'field_sql_storage',
@@ -1069,9 +1107,36 @@ function givecamp_set_fields_types() {
       'bundle' => 'proposal',
     ),
     array(
+      'field_name' => 'field_proposal_status',
+      'label' => 'Status',
+      'widget' => array(
+        'weight' => '41',
+        'type' => 'options_onoff',
+        'active' => 1,
+        'settings' => array(
+          'display_label' => 0,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'inline',
+          'type' => 'list_default',
+          'settings' => array(),
+          'weight' => 20,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'Check if the proposal has been approved.',
+      'default_value' => array(
+        0 => array('value' => 0,),
+      ),
+      'entity_type' => 'node',
+      'bundle' => 'proposal',
+    ),
+    array(
       'label' => 'Volunteers',
       'widget' => array(
-        'weight' => '20',
+        'weight' => '25',
         'type' => 'entityreference_autocomplete',
         'settings' => array(
           'match_operator' => 'CONTAINS',
