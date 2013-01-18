@@ -1,5 +1,4 @@
 <?php
-// @TODO Project upload and todolist
 // @TODO perms (only volunteers can see), assign to selfs
 
 /**
@@ -18,33 +17,19 @@ function givecamp_install() {
 }
 
 /**
- * Defines variables for nodes and contrib modules
+ * Defines variables for node settings and contrib modules
  */
 function givecamp_set_vars() {
-  // @TODO maybe a loop for to set these vars
-  // Do not promote
-  variable_set('node_options_block', array('status'));
-  variable_set('node_options_page', array('status'));
-  variable_set('node_options_proposal', array('status'));
-  variable_set('node_options_project', array('status'));
-  variable_set('node_options_sponsor', array('status'));
-  variable_set('node_options_webform', array('status'));
+  $content_types = array(
+    'block', 'page', 'project', 'proposal', 'sponsor', 'webform'
+  );
   
-  // Don't display date/author information
-  variable_set('node_submitted_block', FALSE);
-  variable_set('node_submitted_page', FALSE);
-  variable_set('node_submitted_project', FALSE);
-  variable_set('node_submitted_proposal', FALSE);
-  variable_set('node_submitted_sponsor', FALSE);
-  variable_set('node_submitted_webform', FALSE);
-  
-  // Comments disabled.
-  variable_set('comment_block', COMMENT_NODE_HIDDEN);
-  variable_set('comment_project', COMMENT_NODE_HIDDEN);
-  variable_set('comment_proposal', COMMENT_NODE_HIDDEN);
-  variable_set('comment_sponsor', COMMENT_NODE_HIDDEN);
-  variable_set('comment_webform', COMMENT_NODE_HIDDEN);
-  variable_set('comment_page', COMMENT_NODE_HIDDEN);
+  // Do not promote or display date/author information, no comments
+  foreach ($content_types as $content_type) {
+    variable_set("node_options_{$content_type}", array('status'));
+    variable_set("node_submitted_{$content_type}", FALSE);
+    variable_set("comment_{$content_type}", COMMENT_NODE_HIDDEN);
+  }
 
   // @TODO not working
   // Don't let a particular content type add links to main menu
@@ -146,6 +131,7 @@ function givecamp_set_vars() {
  * Implements hook_views_api().
  */
 function givecamp_views_api() {
+  $module = $api = ''; // initialize
   list($module, $api) = func_get_args();
   if ($module == "views" && $api == "views_default") {
     return array("version" => "3.0");
@@ -157,6 +143,7 @@ function givecamp_views_api() {
  * Import default views
  */
 function givecamp_views_default_views() {
+  $views = $view = ''; // initialize
   foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
     include_once($filename);
     $views[$view->name] = $view;
@@ -591,9 +578,7 @@ function givecamp_set_fields_types() {
     $type = node_type_set_defaults($type);
     node_type_save($type);
     // No need for body field on proposals or projects
-    if ($type->type != 'proposal' || $type->type != 'project'){
-      node_add_body_field($type);
-    }
+    $type->type != 'proposal' ? node_add_body_field($type) : '';
   }
 
   // Create a default vocabulary named "Tags", enabled for the 'article' content type.
@@ -833,7 +818,27 @@ function givecamp_set_fields_types() {
       'bundles' => array(
         'node' => array(0 => 'proposal',),
       ),
-    )
+    ),
+    array(
+      'field_name' => 'field_todo_list',
+      'type' => 'mytinytodo_list',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'locked' => '0',
+      'cardinality' => '1',
+    ),
+    array(
+      'field_name' => 'field_documents',
+      'settings' => array(
+        'display_default' => 1,
+        'uri_scheme' => 'public',
+      ),
+      'type' => 'file',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '-1',
+    ),
   );
   
   foreach ($default_fields as $key => $value) {
@@ -1038,7 +1043,6 @@ function givecamp_set_fields_types() {
         'default' => array(
           'label' => 'above',
           'type' => 'text_default',
-          //'weight' => 51,
         ),
       ),
       'required' => 1,
@@ -1158,6 +1162,49 @@ function givecamp_set_fields_types() {
       'entity_type' => 'node',
       'bundle' => 'proposal',
     ),
+    array(
+      'field_name' => 'field_todo_list',
+      'label' => st('Todo List'),
+      'widget' => array(
+        'weight' => '5',
+        'type' => 'mytinytodo_widget',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'mytinytodo_formatter',
+          'weight' => 1,
+        ),
+      ),
+      'required' => 0,
+      'description' => '',
+      'entity_type' => 'node',
+      'bundle' => 'project',
+    ),
+    array(
+      'field_name' => 'field_documents',
+      'label' => st('Documents'),
+      'widget' => array(
+        'weight' => '10',
+        'type' => 'file_generic',
+        'settings' => array(
+          'progress_indicator' => 'throbber',
+        ),
+      ),
+      'settings' => array(
+        'file_directory' => 'project-files',
+        'file_extensions' => 'txt doc pdf ppt docx',
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'file_default',
+        ),
+      ),
+      'required' => 0,
+      'entity_type' => 'node',
+      'bundle' => 'project',
+    ),
   );
   
   foreach ($instances as $key => $value) {
@@ -1224,7 +1271,6 @@ function givecamp_set_nodes_links() {
       'menu_name' => 'main-menu'
     );
 
-    $node->path['alias'] = $value['link_path'];
     $node->comment = 0;
     $node->status = 1;
     $node->revision = 0;

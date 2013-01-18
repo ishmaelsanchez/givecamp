@@ -180,7 +180,7 @@ $handler->display->display_options['fields']['field_project_approved_']['element
 $handler->display->display_options['path'] = 'admin/content/proposal-review';
 $handler->display->display_options['menu']['type'] = 'tab';
 $handler->display->display_options['menu']['title'] = 'Proposal Review';
-$handler->display->display_options['menu']['weight'] = '-1';
+$handler->display->display_options['menu']['weight'] = '0';
 $handler->display->display_options['menu']['context'] = 0;
 
 /* Display: Proposal Notification */
