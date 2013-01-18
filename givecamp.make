@@ -15,11 +15,7 @@ projects[ctools][subdir] = "contrib"
 projects[context][type] = "module"
 projects[context][subdir] = "contrib"
 
-
 ; Date/time ====================================================================
-projects[calendar][type] = "module"
-projects[calendar][subdir] = "contrib"
-
 projects[date][type] = "module"
 projects[date][subdir] = "contrib"
 
@@ -31,22 +27,31 @@ projects[devel][subdir] = "contrib"
 projects[email][type] = "module"
 projects[email][subdir] = "contrib"
 
-projects[link][type] = "module"
-projects[link][subdir] = "contrib"
-
 projects[entity][type] = "module"
 projects[entity][subdir] = "contrib"
 
 projects[entityreference][type] = "module"
 projects[entityreference][subdir] = "contrib"
 
+projects[field_permissions][type] = "module"
+projects[field_permissions][subdir] = "contrib"
+
+projects[link][type] = "module"
+projects[link][subdir] = "contrib"
+
 ; Menu =========================================================================
 projects[menu_block][type] = "module"
 projects[menu_block][subdir] = "contrib"
 
 ; Other ========================================================================
+projects[content_access][type] = "module"
+projects[content_access][subdir] = "contrib"
+
 projects[module_filter][type] = "module"
 projects[module_filter][subdir] = "contrib"
+
+projects[mytinytodo][type] = "module"
+projects[mytinytodo][subdir] = "contrib"
 
 projects[nodeblock][type] = "module"
 projects[nodeblock][subdir] = "contrib"
@@ -62,6 +67,8 @@ projects[entitycache][type] = "module"
 projects[entitycache][subdir] = "contrib"
 
 ; Rules ========================================================================
+projects[rules][type] = "module"
+projects[rules][subdir] = "contrib"
 
 ; Security =====================================================================
 projects[mollom][type] = "module"
@@ -90,7 +97,6 @@ projects[socialmedia][subdir] = contrib
 projects[twitter_pull][type] = module
 projects[twitter_pull][subdir] = contrib
 
-
 ; Views ========================================================================
 projects[views][type] = "module"
 projects[views][subdir] = "contrib"
@@ -113,12 +119,11 @@ projects[webform][subdir] = "contrib"
 projects[imce][type] = "module"
 projects[imce][subdir] = "contrib"
 
-projects[wysiwyg][type] = "module"
-projects[wysiwyg][subdir] = "contrib"
-
 projects[imce_wysiwyg][type] = "module"
 projects[imce_wysiwyg][subdir] = "contrib"
 
+projects[wysiwyg][type] = "module"
+projects[wysiwyg][subdir] = "contrib"
 
 ; Themes =======================================================================
 projects[rubik][type] = "theme"

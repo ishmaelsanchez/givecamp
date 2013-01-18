@@ -6,6 +6,7 @@ core = 7.x
 
 ; Enable contrib modules
 dependencies[] = admin_menu
+dependencies[] = content_access
 dependencies[] = context
 dependencies[] = context_ui
 dependencies[] = ctools
@@ -14,6 +15,7 @@ dependencies[] = date_popup
 dependencies[] = email
 dependencies[] = entitycache
 dependencies[] = entityreference
+dependencies[] = field_permissions
 dependencies[] = globalredirect
 dependencies[] = googleanalytics
 dependencies[] = imce
@@ -24,6 +26,7 @@ dependencies[] = metatag
 dependencies[] = module_filter
 dependencies[] = nodeblock
 dependencies[] = pathauto
+dependencies[] = rules
 dependencies[] = twitter_pull
 dependencies[] = token
 dependencies[] = views
