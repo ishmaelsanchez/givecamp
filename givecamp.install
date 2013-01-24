@@ -31,11 +31,16 @@ function givecamp_set_vars() {
     variable_set("comment_{$content_type}", COMMENT_NODE_HIDDEN);
   }
 
-  // @TODO not working
-  // Don't let a particular content type add links to main menu
-  variable_set('menu_parent_article', 'main-menu:0');
-  variable_set('menu_parent_block', 'main-menu:0');
-  variable_set('menu_parent_webform', 'main-menu:0');
+  // Disable ability to add to main menu by default
+  $menu_types = array(
+    'article', 'block', 'event', 'project', 'proposal', 'sponsor', 'webform'
+  );
+
+  // Set menu variables
+  foreach ($menu_types as $item) {
+    variable_set("menu_options_{$item}", array(''));
+    variable_set("menu_parent_{$item}", 'main-menu:0');
+  }
 
   // IMCE access for manager and admin roles
   variable_set('imce_roles_profiles', array(
@@ -48,6 +53,9 @@ function givecamp_set_vars() {
       'public_pid' => 1,
     ), 
   ));
+  
+  // Move menu menu, could be an issue with Foundation
+  variable_set('admin_menu_position_fixed', 1);
   
   // Enable nodeblock for block content type
   variable_set('nodeblock_block', 1);
@@ -475,6 +483,36 @@ function givecamp_set_blocks() {
       'pages' => '',
       'cache' => -1,
     ),
+    array(
+      'module' => 'system',
+      'delta' => 'main',
+      'theme' => $admin_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'help',
+      'theme' => $admin_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'views',
+      'delta' => 'sponsors-block_1',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => 'sponsors',
+      'cache' => -1,
+    ),
 
   );
   $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
@@ -501,6 +539,20 @@ function givecamp_set_blocks() {
     'favicon_path' => '',
     'favicon_upload' => '',
   ));
+  
+  // Activate theme on theme settings page
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', 'zurb_foundation')
+    ->execute();
+
+  // Disable Bartik theme
+  db_update('system')
+    ->fields(array('status' => 0))
+    ->condition('type', 'theme')
+    ->condition('name', 'bartik')
+    ->execute();
 }
 
 function givecamp_set_fields_types() {

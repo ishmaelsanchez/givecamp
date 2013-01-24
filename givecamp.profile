@@ -33,7 +33,10 @@ function givecamp_form_install_configure_form_alter(&$form, $form_state) {
 
   // Opt out of e-mail notifications 
   $form['update_notifications']['update_status_module']["#default_value"]['1'] = '0';
+  
+  // Clean up after install
   drupal_flush_all_caches();
   drupal_cron_run();
- 
+  menu_rebuild();
+  node_access_rebuild(TRUE);
 }
