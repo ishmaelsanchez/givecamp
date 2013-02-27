@@ -59,9 +59,6 @@ projects[nodeblock][subdir] = "contrib"
 projects[token][type] = "module"
 projects[token][subdir] = "contrib"
 
-; projects[securepages][type] = "module"
-; projects[securepages][subdir] = "contrib"
-
 ; Performance ==================================================================
 projects[entitycache][type] = "module"
 projects[entitycache][subdir] = "contrib"
@@ -96,6 +93,9 @@ projects[socialmedia][subdir] = contrib
 
 projects[twitter_pull][type] = module
 projects[twitter_pull][subdir] = contrib
+
+projects[oauthconnector][type] = module
+projects[oauthconnector][subdir] = contrib
 
 ; Views ========================================================================
 projects[views][type] = "module"

@@ -1,8 +1,25 @@
 name = Givecamp
+project = givecamp
+distribution_name = "Givecamp"
 description = GiveCamp Starter provides an out of the box web solution for hosting a GiveCamp.
-version = "7.x-1.0"
-
 core = 7.x
+
+; Enable core modules
+dependencies[] = block
+dependencies[] = contextual
+dependencies[] = help
+dependencies[] = image
+dependencies[] = list
+dependencies[] = menu
+dependencies[] = number
+dependencies[] = options
+dependencies[] = file
+dependencies[] = path
+dependencies[] = taxonomy
+dependencies[] = dblog
+dependencies[] = search
+dependencies[] = field_ui
+dependencies[] = file
 
 ; Enable contrib modules
 dependencies[] = admin_menu
@@ -39,23 +56,6 @@ dependencies[] = wysiwyg
 dependencies[] = xmlsitemap
 dependencies[] = xmlsitemap_node
 dependencies[] = xmlsitemap_engines
-
-; Enable base modules
-dependencies[] = block
-dependencies[] = contextual
-dependencies[] = help
-dependencies[] = image
-dependencies[] = list
-dependencies[] = menu
-dependencies[] = number
-dependencies[] = options
-dependencies[] = file
-dependencies[] = path
-dependencies[] = taxonomy
-dependencies[] = dblog
-dependencies[] = search
-dependencies[] = field_ui
-dependencies[] = file
 
 dependencies[] = devel
 

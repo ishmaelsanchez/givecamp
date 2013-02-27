@@ -1,5 +1,6 @@
 <?php
 // @TODO perms (only volunteers can see), assign to selfs
+// http://grgivecamp.org/about
 
 /**
  * Implements hook_install().
@@ -54,7 +55,7 @@ function givecamp_set_vars() {
     ), 
   ));
   
-  // Move menu menu, could be an issue with Foundation
+  // Move menu menu, could be an issue with Zurb Foundation
   variable_set('admin_menu_position_fixed', 1);
   
   // Enable nodeblock for block content type
@@ -81,7 +82,7 @@ function givecamp_set_vars() {
   // Set XML sitemap minimum
   variable_set('xmlsitemap_engines_minimum_lifetime', '604800');
   
-  // Include pages and articles in sitemap
+  // Types to include in sitemap
   variable_set('xmlsitemap_settings_node_page', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_article', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_event', array('status' => 1, 'priority' => 0.5));
@@ -151,6 +152,7 @@ function givecamp_views_api() {
  * Import default views
  */
 function givecamp_views_default_views() {
+  // @TODO views aren't enabled ???
   $views = $view = ''; // initialize
   foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
     include_once($filename);
@@ -347,8 +349,16 @@ function givecamp_set_perm_roles() {
   // Integrity constraint violation: 1048 Column 'module' cannot be null
 
   // Set perms for default roles
-  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'search content'));
-  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access content', 'search content'));
+  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array(
+    'access content', 'search content', 'create proposal content',
+  ));
+  
+  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array(
+    'access content',
+    'search content',
+    'create proposal content',
+    'edit own proposal content',
+  ));
   
   // Create role for admins with all available permissions assigned.
   $admin_role = new stdClass();
@@ -380,8 +390,10 @@ function givecamp_set_perm_roles() {
     'access content overview',
     'create article content',
     'create block content',
-    'create page content',
     'create event content',
+    'create page content',
+    'create project content',
+    'create proposal content',
     'create sponsor content',
     'create webform content',
     'edit any article content',
@@ -390,6 +402,10 @@ function givecamp_set_perm_roles() {
     'edit own block content',
     'edit any block content',
     'edit own page content',
+    'edit own project content',
+    'edit any project content',
+    'edit any proposal content',
+    'edit own proposal content',
     'edit own event content',
     'edit any event content',
     'edit own sponsor content',
@@ -430,14 +446,18 @@ function givecamp_set_perm_roles() {
     'access content overview',
     'create article content',
     'create block content',
-    'create page content',
     'create event content',
+    'create page content',
+    'create project content',
+    'create proposal content',
     'create sponsor content',
     'edit any article content',
+    'edit own block content',
     'edit any page content',
     'edit own article content',
-    'edit own block content',
     'edit own page content',
+    'edit own project content',
+    'edit own proposal content',
     'edit own event content',
     'edit own sponsor content',
     'revert revisions',
@@ -483,6 +503,17 @@ function givecamp_set_blocks() {
       'pages' => '',
       'cache' => -1,
     ),
+    // @TODO need to show on only the listed pages
+    array(
+      'module' => 'views',
+      'delta' => 'sponsors-block_1',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => 'sponsors',
+      'cache' => -1,
+    ),
     array(
       'module' => 'system',
       'delta' => 'main',
@@ -503,17 +534,6 @@ function givecamp_set_blocks() {
       'pages' => '',
       'cache' => -1,
     ),
-    array(
-      'module' => 'views',
-      'delta' => 'sponsors-block_1',
-      'theme' => $default_theme,
-      'status' => 1,
-      'weight' => 0,
-      'region' => 'content',
-      'pages' => 'sponsors',
-      'cache' => -1,
-    ),
-
   );
   $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
   foreach ($values as $record) {

@@ -35,8 +35,7 @@ function givecamp_form_install_configure_form_alter(&$form, $form_state) {
   $form['update_notifications']['update_status_module']["#default_value"]['1'] = '0';
   
   // Clean up after install
-  drupal_flush_all_caches();
+  node_access_rebuild();
   drupal_cron_run();
-  menu_rebuild();
-  node_access_rebuild(TRUE);
+  drupal_flush_all_caches();
 }
