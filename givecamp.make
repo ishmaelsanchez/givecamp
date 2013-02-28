@@ -94,9 +94,6 @@ projects[socialmedia][subdir] = contrib
 projects[twitter_pull][type] = module
 projects[twitter_pull][subdir] = contrib
 
-projects[oauthconnector][type] = module
-projects[oauthconnector][subdir] = contrib
-
 ; Views ========================================================================
 projects[views][type] = "module"
 projects[views][subdir] = "contrib"

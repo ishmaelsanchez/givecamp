@@ -145,6 +145,11 @@ function givecamp_views_api() {
   if ($module == "views" && $api == "views_default") {
     return array("version" => "3.0");
   }
+  // @TODO sometimes flushing cache makes default views disappear
+//    return array(
+//    'api' => 3,
+//    'path' => drupal_get_path('module', 'date_views') . '/includes',
+//  );
 }
 
 /** 
@@ -152,7 +157,6 @@ function givecamp_views_api() {
  * Import default views
  */
 function givecamp_views_default_views() {
-  // @TODO views aren't enabled ???
   $views = $view = ''; // initialize
   foreach (glob(dirname(__FILE__) . "/views/*.inc") as $filename) {
     include_once($filename);
@@ -479,7 +483,7 @@ function givecamp_set_perm_roles() {
 
 function givecamp_set_blocks() {
   $default_theme = variable_get('theme_default', 'zurb_foundation');
-  $admin_theme = 'rubik';
+  $admin_theme = variable_get('admin_theme', 'rubik');
   
   // Enable some blocks.
   $values = array(
@@ -541,37 +545,30 @@ function givecamp_set_blocks() {
   }
   $query->execute();
   
-  // Set default theme settings
-  variable_set('theme_rubik_settings', array(
-    'toggle_logo' => 1,
-    'toggle_name' => 1,
-    'toggle_slogan' => 0,
-    'toggle_node_user_picture' => 0,
-    'toggle_comment_user_picture' => 0,
-    'toggle_comment_user_verification' => 0,
-    'toggle_favicon' => 1,
-    'toggle_main_menu' => 1,
-    'toggle_secondary_menu' => 0,
-    'default_logo' => 0,
-    'logo_path' => 'profiles/givecamp/logo.png',
-    'logo_upload' => '',
-    'default_favicon' => 1,
-    'favicon_path' => '',
-    'favicon_upload' => '',
-  ));
+//  // Set default theme settings
+//  variable_set('theme_rubik_settings', array(
+//    'toggle_logo' => 1,
+//    'toggle_name' => 1,
+//    'toggle_slogan' => 0,
+//    'toggle_node_user_picture' => 0,
+//    'toggle_comment_user_picture' => 0,
+//    'toggle_comment_user_verification' => 0,
+//    'toggle_favicon' => 1,
+//    'toggle_main_menu' => 1,
+//    'toggle_secondary_menu' => 0,
+//    'default_logo' => 0,
+//    'logo_path' => 'profiles/givecamp/logo.png',
+//    'logo_upload' => '',
+//    'default_favicon' => 1,
+//    'favicon_path' => '',
+//    'favicon_upload' => '',
+//  ));
   
   // Activate theme on theme settings page
   db_update('system')
     ->fields(array('status' => 1))
     ->condition('type', 'theme')
     ->condition('name', 'zurb_foundation')
-    ->execute();
-
-  // Disable Bartik theme
-  db_update('system')
-    ->fields(array('status' => 0))
-    ->condition('type', 'theme')
-    ->condition('name', 'bartik')
     ->execute();
 }
 

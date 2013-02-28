@@ -6,7 +6,7 @@ Charity/Non-Profits to enter proposal submissions
   * Implemented using a custom content type proposal and additional fields
 
 Volunteer registration
-  * Implemented via core Drupal, administrator approval signups
+  * Implemented via core Drupal, administrator approve signups
 
 Volunteers can review and self-assign themselves to a project
   * Implemented using entity reference 
@@ -36,7 +36,7 @@ The ability for Administrators to add/update sponsors information
   * Implemented using sponsor content type
 
 Allow project teams to collaborate with each other on projects
-  * Implemented using project content type and todo list field
+  * Implemented using project content type and mytinytodo list field
 
 Allow project team member to upload documents to their projects
   * File field on project nodes
